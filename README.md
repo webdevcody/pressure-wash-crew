@@ -2,7 +2,11 @@
 
 A single-player, first-person pressure washing game for the browser.
 
-## Run it
+## Play it
+
+Live build: https://webdevcody.github.io/pressure-wash-crew/ (deployed by `.github/workflows/deploy.yml` on every push to `main`).
+
+## Run it locally
 
 ```bash
 pnpm install
