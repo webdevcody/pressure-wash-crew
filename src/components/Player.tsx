@@ -1,0 +1,103 @@
+import { useEffect, useRef } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { CapsuleCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier'
+import * as THREE from 'three'
+import { runtime } from '../game/runtime'
+import { SPAWN } from '../game/level1'
+import { useGame } from '../game/store'
+
+const WALK_SPEED = 4.5
+const RUN_SPEED = 7
+const JUMP_SPEED = 5
+const EYE_HEIGHT = 0.65 // above capsule center
+const MOUSE_SENS = 0.0022
+
+const euler = new THREE.Euler(0, 0, 0, 'YXZ')
+
+export function Player() {
+  const body = useRef<RapierRigidBody>(null)
+  const camera = useThree((s) => s.camera)
+  const gl = useThree((s) => s.gl)
+  const runId = useGame((s) => s.runId)
+
+  // Keyboard + mouse look.
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => runtime.keys.add(e.code)
+    const up = (e: KeyboardEvent) => runtime.keys.delete(e.code)
+    const blur = () => runtime.keys.clear()
+    const move = (e: MouseEvent) => {
+      if (document.pointerLockElement !== gl.domElement) return
+      runtime.look.yaw -= e.movementX * MOUSE_SENS
+      runtime.look.pitch -= e.movementY * MOUSE_SENS
+      runtime.look.pitch = Math.max(-1.5, Math.min(1.5, runtime.look.pitch))
+    }
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    window.addEventListener('blur', blur)
+    document.addEventListener('mousemove', move)
+    return () => {
+      window.removeEventListener('keydown', down)
+      window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', blur)
+      document.removeEventListener('mousemove', move)
+    }
+  }, [gl])
+
+  // Respawn at the start of every run.
+  useEffect(() => {
+    const b = body.current
+    if (!b) return
+    b.setTranslation({ x: SPAWN[0], y: SPAWN[1], z: SPAWN[2] }, true)
+    b.setLinvel({ x: 0, y: 0, z: 0 }, true)
+    runtime.look.yaw = 0
+    runtime.look.pitch = 0
+  }, [runId])
+
+  useFrame(() => {
+    const b = body.current
+    if (!b) return
+    const { phase, paused } = useGame.getState()
+    const active = phase === 'playing' && !paused
+    const k = runtime.keys
+
+    let fx = 0
+    let fz = 0
+    if (active) {
+      if (k.has('KeyW') || k.has('ArrowUp')) fz += 1
+      if (k.has('KeyS') || k.has('ArrowDown')) fz -= 1
+      if (k.has('KeyD') || k.has('ArrowRight')) fx += 1
+      if (k.has('KeyA') || k.has('ArrowLeft')) fx -= 1
+    }
+    const len = Math.hypot(fx, fz) || 1
+    const speed = k.has('ShiftLeft') || k.has('ShiftRight') ? RUN_SPEED : WALK_SPEED
+    const yaw = runtime.look.yaw
+    const sin = Math.sin(yaw)
+    const cos = Math.cos(yaw)
+    // forward = (-sin, -cos), right = (cos, -sin)
+    const vx = ((-sin * fz + cos * fx) / len) * speed
+    const vz = ((-cos * fz - sin * fx) / len) * speed
+
+    const vel = b.linvel()
+    let vy = vel.y
+    if (active && k.has('Space') && Math.abs(vy) < 0.05) vy = JUMP_SPEED
+    b.setLinvel({ x: vx, y: vy, z: vz }, true)
+
+    const p = b.translation()
+    camera.position.set(p.x, p.y + EYE_HEIGHT, p.z)
+    euler.set(runtime.look.pitch, yaw, 0)
+    camera.quaternion.setFromEuler(euler)
+  })
+
+  return (
+    <RigidBody
+      ref={body}
+      colliders={false}
+      position={SPAWN}
+      enabledRotations={[false, false, false]}
+      canSleep={false}
+      ccd
+    >
+      <CapsuleCollider args={[0.5, 0.35]} friction={0} />
+    </RigidBody>
+  )
+}
