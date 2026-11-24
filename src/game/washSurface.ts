@@ -23,8 +23,6 @@ export interface SurfaceDef {
    * never dirty and don't count toward the total, since the spray can't reach them.
    */
   holes?: [number, number, number, number][]
-  /** Full-resolution texture set drawn under the dirt (see components/House.tsx). */
-  look?: 'siding'
 }
 
 /**
@@ -184,7 +182,8 @@ export class WashSurface {
     this.pixels[o] = clamp255(this.cleanRGB[0] + (dr - this.cleanRGB[0]) * d)
     this.pixels[o + 1] = clamp255(this.cleanRGB[1] + (dg - this.cleanRGB[1]) * d)
     this.pixels[o + 2] = clamp255(this.cleanRGB[2] + (db - this.cleanRGB[2]) * d)
-    this.pixels[o + 3] = 255
+    // Alpha = stain coverage, used by textured wash materials (washMaterial.ts).
+    this.pixels[o + 3] = clamp255(d * 255)
   }
 }
 

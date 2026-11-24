@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Grid } from '@react-three/drei'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
-import { blocks, surfaces as surfaceDefs } from '../game/level1'
+import { blocks, surfaces as surfaceDefs, YARD_HALF, type LevelSurfaceDef } from '../game/level1'
 import { WashSurface } from '../game/washSurface'
+import { createWashMaterial } from '../game/washMaterial'
+import {
+  metricBoxGeometry,
+  useBlockMaterials,
+  useGrassMaterial,
+  useYardTextures,
+  YARD_TILE,
+  type YardTextures,
+} from './yard/yardMaterials'
 import { runtime, totalRemaining } from '../game/runtime'
 import { FINISH_THRESHOLD, useGame } from '../game/store'
-import { createWashMaterial } from '../game/washMaterial'
 import { House, sidingLook } from './House'
 
 export function Level() {
@@ -15,9 +22,13 @@ export function Level() {
   const group = useRef<THREE.Group>(null)
 
   const washSurfaces = useMemo(() => surfaceDefs.map((d) => new WashSurface(d)), [])
-  const washMaterials = useMemo(
-    () => washSurfaces.map((s) => (s.def.look === 'siding' ? createWashMaterial(s, sidingLook()) : null)),
-    [washSurfaces],
+  const yardTex = useYardTextures()
+  const blockMaterials = useBlockMaterials(yardTex)
+  const grass = useGrassMaterial(yardTex, YARD_HALF * 2)
+  const washMaterials = useMemo(() => washSurfaces.map((s) => washMaterialFor(s, yardTex)), [washSurfaces, yardTex])
+  const blockGeometries = useMemo(
+    () => blocks.map((b) => (b.material && b.material !== 'crate' ? metricBoxGeometry(b.size) : null)),
+    [],
   )
 
   // Publish surfaces + raycast targets for the washer.
@@ -46,27 +57,29 @@ export function Level() {
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider args={[20, 0.5, 20]} position={[0, -0.5, 0]} />
       </RigidBody>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow userData={{ raycastable: true }}>
-        <planeGeometry args={[40, 40]} />
-        <meshStandardMaterial color="#6f7a64" />
+      {/* Lawn, stopping at the perimeter walls' outer faces (the city starts there). */}
+      <mesh rotation-x={-Math.PI / 2} receiveShadow material={grass} userData={{ raycastable: true }}>
+        <planeGeometry args={[YARD_HALF * 2, YARD_HALF * 2]} />
       </mesh>
-      <Grid
-        position={[0, 0.005, 0]}
-        args={[40, 40]}
-        cellSize={1}
-        cellColor="#5c6654"
-        sectionSize={5}
-        sectionColor="#4a5244"
-        fadeDistance={45}
-        infiniteGrid={false}
-      />
 
       {blocks.map((b, i) => (
         <RigidBody key={i} type="fixed" colliders="cuboid" position={b.position}>
-          <mesh castShadow receiveShadow userData={{ raycastable: true }}>
-            <boxGeometry args={b.size} />
-            <meshStandardMaterial color={b.color} />
-          </mesh>
+          {b.material ? (
+            <mesh
+              castShadow
+              receiveShadow
+              geometry={blockGeometries[i] ?? undefined}
+              material={blockMaterials[b.material]}
+              userData={{ raycastable: true }}
+            >
+              {!blockGeometries[i] && <boxGeometry args={b.size} />}
+            </mesh>
+          ) : (
+            <mesh castShadow receiveShadow userData={{ raycastable: true }}>
+              <boxGeometry args={b.size} />
+              <meshStandardMaterial color={b.color} />
+            </mesh>
+          )}
         </RigidBody>
       ))}
 
@@ -89,6 +102,30 @@ export function Level() {
       <ProgressTracker />
     </group>
   )
+}
+
+/** Textured material for a washable surface, or null for the flat-color default. */
+function washMaterialFor(surface: WashSurface, tex: YardTextures): THREE.Material | null {
+  switch ((surface.def as LevelSurfaceDef).look) {
+    case 'concrete':
+      return createWashMaterial(surface, {
+        map: tex.concreteAlbedo,
+        normalMap: tex.concreteNormal,
+        tileMeters: [...YARD_TILE.concrete],
+        roughness: 0.88,
+      })
+    case 'wood':
+      return createWashMaterial(surface, {
+        map: tex.woodAlbedo,
+        normalMap: tex.woodNormal,
+        tileMeters: [...YARD_TILE.wood],
+        roughness: 0.8,
+      })
+    case 'siding':
+      return createWashMaterial(surface, { ...sidingLook(), roughness: 0.85 })
+    default:
+      return null
+  }
 }
 
 /** Uploads painted textures each frame and reports progress ~10x/sec. */
