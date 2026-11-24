@@ -11,7 +11,8 @@ export default async ({ page, sleep, startRun, pose, spray, debug }) => {
   await startRun()
   if (!debug) return
 
-  const find = (surface, type) => page.evaluate(([s, t]) => window.__pwc.findStain(s, t), [surface, type])
+  // Base builds (before this PR) have no findStain: those steps are skipped.
+  const find = (surface, type) => page.evaluate(([s, t]) => window.__pwc.findStain?.(s, t) ?? null, [surface, type])
   const key = async (code) => {
     await page.keyboard.press(code)
     await sleep(500)
