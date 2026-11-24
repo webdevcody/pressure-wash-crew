@@ -1,0 +1,8 @@
+{
+  "$comment": "Yard textures: driveway, fence and perimeter wall.",
+  "views": [
+    { "name": "driveway-spraying", "phase": "playing", "spray": true, "pose": { "pos": [7, 1, 6.5], "lookAt": [7, 0, 1] } },
+    { "name": "fence-closeup", "phase": "playing", "pose": { "pos": [-4.5, 1, 4], "lookAt": [-7, 0.6, 1.5] } },
+    { "name": "perimeter-wall", "phase": "playing", "pose": { "pos": [-10, 1, -11], "lookAt": [-6, 0.8, -15] } }
+  ]
+}

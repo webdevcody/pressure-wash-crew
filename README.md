@@ -21,6 +21,9 @@ pnpm build      # typecheck + production build
 | WASD / arrows | Move |
 | Mouse | Look (click Start to lock the pointer) |
 | Left mouse (hold) | Spray |
+| Q / E | Previous / next nozzle |
+| 1-5 | Pick a nozzle directly |
+| R | Turn fan nozzles (horizontal / vertical line) |
 | Shift | Run |
 | Space | Jump |
 | Esc | Pause |
@@ -29,6 +32,8 @@ pnpm build      # typecheck + production build
 
 - **Stack:** Vite + TypeScript, React Three Fiber v9 + drei, `@react-three/rapier` for physics, zustand for game state.
 - **Washing:** every washable face is a `WashSurface` (`src/game/washSurface.ts`) with a CPU-side dirt mask (32 texels per meter) baked into a `DataTexture`. Each frame the washer casts a small cone of rays from the camera; hits on a washable plane stamp a soft brush at the hit UV. Closer = tighter and stronger. Because the mask lives on the CPU, the "% remaining" count is exact and needs no GPU readback.
+- **Nozzles:** `src/game/nozzles.ts` defines five real-style tips: 0° pinpoint (red), 15° line (yellow), 25° cone (green, default), 40° wide fan (white) and soap (black). Each has a spray shape (point, cone or fan line), reach, pressure and cleaning rate. Wider tips clean more area per second but with less pressure.
+- **Stains:** `src/game/stains.ts` scatters stains over each surface by kind (wall, ground, fence), re-randomized every run: base grime, mildew patches, rust drips / tire marks / water streaks, stuck-on paint, tar and gum, and oil. Each type has a hardness; a tip whose pressure is below it barely cleans it, so tough spots need the 0° tip, streaks the 15° line, and oil needs soap before any tip can rinse it. The HUD names the stain under the crosshair and suggests a better tip. `?seed=N` pins the layout (`?perf` pins seed 1 for PR captures).
 - **Occlusion:** the spray raycasts against every level mesh, so you can't wash through walls.
 - **Game loop:** menu → playing (timer + % dirt remaining + per-surface checklist) → score screen when ≤1% of the dirt is left. Fastest time is stored in `localStorage`.
 - **Level:** `src/game/level1.ts` is pure data: gray-box blockers plus the washable surfaces placed on them. Add a surface by adding an entry there.

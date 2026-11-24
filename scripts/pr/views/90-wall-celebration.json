@@ -1,0 +1,6 @@
+{
+  "$comment": "Wall celebration. Its eval leaves a timer running, so it sorts last.",
+  "views": [
+    { "name": "wall-celebration", "phase": "playing", "pose": { "pos": [1.5, 1, 4], "lookAt": [0, 1.5, -3] }, "eval": "setInterval(() => window.__pwc.celebrate?.('house-front'), 800)", "settleMs": 600 }
+  ]
+}

@@ -145,6 +145,7 @@ export const surfaces: LevelSurfaceDef[] = [
   {
     id: 'house-front',
     name: 'House front',
+    kind: 'wall',
     width: 8,
     height: 3,
     position: [0, 1.5, -2.99],
@@ -158,6 +159,7 @@ export const surfaces: LevelSurfaceDef[] = [
   {
     id: 'house-east',
     name: 'House side',
+    kind: 'wall',
     width: 6,
     height: 3,
     position: [4.01, 1.5, -6],
@@ -171,6 +173,7 @@ export const surfaces: LevelSurfaceDef[] = [
   {
     id: 'driveway',
     name: 'Driveway',
+    kind: 'ground',
     width: 3,
     height: 7,
     position: [7, 0.02, 1],
@@ -183,6 +186,7 @@ export const surfaces: LevelSurfaceDef[] = [
   {
     id: 'fence',
     name: 'Fence',
+    kind: 'fence',
     width: 8,
     height: 1.2,
     position: [-6.89, 0.6, 2],

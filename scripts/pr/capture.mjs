@@ -6,7 +6,7 @@
 // Options:
 //   --url <url>          page to load (required); ?perf is appended
 //   --out <dir>          output dir (required)
-//   --views <file>       view list (default scripts/pr/views.json)
+//   --views <path>       a view file, or a folder of them (default scripts/pr/views/)
 //   --seconds <n>        perf sample length per view (default 4)
 //   --scenario <file>    custom walkthrough module for the video (see SKILL.md)
 //   --no-video           skip the video
@@ -33,8 +33,7 @@ const outDir = path.resolve(args.out)
 const seconds = Number(args.seconds ?? 4)
 const samples = Math.max(1, Number(args.samples ?? 1))
 const dpr = Number(args.dpr ?? 1)
-const viewsFile = path.resolve(args.views ?? path.join(here, 'views.json'))
-const { views } = JSON.parse(fs.readFileSync(viewsFile, 'utf8'))
+const views = loadViews(path.resolve(args.views ?? path.join(here, 'views')))
 const probe = fs.readFileSync(path.join(here, 'perf-probe.js'), 'utf8')
 const VIEWPORT = { width: 1280, height: 720 }
 
@@ -296,4 +295,19 @@ function parseArgs(argv) {
     else out[key] = argv[++i]
   }
   return out
+}
+
+// One JSON file per feature ({ "views": [...] }), read in file-name order, so
+// a PR adds its views as a new file instead of editing a shared list.
+function loadViews(p) {
+  const files = fs.statSync(p).isDirectory()
+    ? fs.readdirSync(p).filter((f) => f.endsWith('.json')).sort().map((f) => path.join(p, f))
+    : [p]
+  const all = files.flatMap((f) => JSON.parse(fs.readFileSync(f, 'utf8')).views)
+  const seen = new Set()
+  for (const v of all) {
+    if (seen.has(v.name)) throw new Error(`duplicate view name "${v.name}" in ${p}`)
+    seen.add(v.name)
+  }
+  return all
 }

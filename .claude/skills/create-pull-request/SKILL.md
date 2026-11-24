@@ -15,7 +15,7 @@ The tooling lives in `scripts/pr/`. All output goes to `.pr-capture/` (git-ignor
 
 The capture runs the same scripted views and walkthrough on the base branch and on your branch.
 
-- **Views** (`scripts/pr/views.json`): fixed camera poses; each gets a screenshot and a perf sample. If your feature isn't visible from the existing views, add one that frames it (`pose.pos` is the player's feet position, `pose.lookAt` a world point, `spray: true` holds the trigger, `eval` runs a JS expression in the page before sampling, e.g. to trigger an effect; make it a no-op on builds without it with `?.`). Commit view additions so later PRs keep measuring them.
+- **Views** (`scripts/pr/views/*.json`, one file per feature, read in file-name order): fixed camera poses; each gets a screenshot and a perf sample. If your feature isn't visible from the existing views, add a new file `scripts/pr/views/<nn>-<feature>.json` with views that frame it (don't edit another feature's file) (`pose.pos` is the player's feet position, `pose.lookAt` a world point, `spray: true` holds the trigger, `eval` runs a JS expression in the page before sampling, e.g. to trigger an effect; make it a no-op on builds without it with `?.`). Commit view additions so later PRs keep measuring them.
 - **Walkthrough video**: the default shows spraying the house, walking, and the score screen. For a feature it doesn't show, write `scripts/pr/scenarios/<feature>.mjs`:
 
   ```js

@@ -1,0 +1,7 @@
+{
+  "$comment": "House model: corner and front door.",
+  "views": [
+    { "name": "house-corner", "phase": "playing", "pose": { "pos": [10, 1, 4], "lookAt": [0, 2.5, -6] } },
+    { "name": "house-door-spraying", "phase": "playing", "spray": true, "pose": { "pos": [1.5, 1, 0], "lookAt": [1.5, 1.8, -3] } }
+  ]
+}

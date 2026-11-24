@@ -1,3 +1,4 @@
+import './SoundControl.css'
 import { useAudioSettings } from '../audio/engine'
 
 /** Sound volume slider + mute toggle, shown on the menu and pause screens. */

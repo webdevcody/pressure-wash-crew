@@ -1,0 +1,10 @@
+{
+  "$comment": "Base game: menu, spawn and the yard overview.",
+  "views": [
+    { "name": "menu", "phase": "menu" },
+    { "name": "spawn", "phase": "playing" },
+    { "name": "spawn-spraying", "phase": "playing", "spray": true },
+    { "name": "yard-overview", "phase": "playing", "pose": { "pos": [12, 1, 12], "lookAt": [0, 1, -4] } },
+    { "name": "house-closeup-spraying", "phase": "playing", "spray": true, "pose": { "pos": [0, 1, 1.5], "lookAt": [0, 1.5, -3] } }
+  ]
+}

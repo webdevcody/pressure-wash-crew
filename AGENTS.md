@@ -19,7 +19,8 @@ pnpm perf:baseline --channel chrome   # re-record main's real-GPU baseline (perf
 ## Layout
 
 - `src/game/`: pure game logic and data (`store.ts` zustand, `runtime.ts` per-frame mutable state, `level1.ts` level data, `washSurface.ts` dirt masks)
-- `src/components/`: R3F scene and HUD/screens
+- `src/components/`: R3F scene and HUD/screens; `src/components/washer/`: the spray, one component per job
+- `src/controls/`: per-feature control help for the menu and HUD
 - `src/dev/debug.ts`: `window.__pwc` debug API (dev builds, or any build with `?perf`); `?stats` shows an FPS panel
 - `scripts/pr/`: PR capture tooling; `perf/baseline.json`: main's real-GPU perf baseline
 
@@ -36,3 +37,8 @@ pnpm perf:baseline --channel chrome   # re-record main's real-GPU baseline (perf
 Add a feature through its own files, not by editing a shared list. Merges that decouple a hotspot add it here.
 
 - Reacting to a surface getting cleaned: subscribe with `onSurfaceCleaned` in `src/game/surfaceEvents.ts` instead of editing the washer.
+- PR capture views: add `scripts/pr/views/<nn>-<feature>.json` (see its README), don't edit another feature's file.
+- Menu keys, HUD hint and menu tips: add `src/controls/<nn>-<feature>.ts`.
+- Washer: one component per job in `src/components/washer/` (input, nozzle keys, aim probe, spray, particles), mounted by `Washer.tsx`. New droplet effects call `emitParticle` (`src/game/sprayParticles.ts`); new raycasts use `castSprayRay` (`src/game/sprayRay.ts`).
+- Dirt masks: per-feature logic goes in its own module that `WashSurface` calls (`surfaceHoles.ts`, `stains.ts`, `noise.ts`), not in its constructor.
+- Component styles: a `.css` file next to the component, imported by it, instead of `src/styles.css`.
