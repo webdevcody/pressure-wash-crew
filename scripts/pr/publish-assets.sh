@@ -30,6 +30,11 @@ for side in before after; do
   if [ -f "$src/$side/walkthrough.webm" ] && [ ! -f "$src/$side/walkthrough.mp4" ]; then cp "$src/$side/walkthrough.webm" "$dest/$side/"; fi
 done
 
+# A README with relative links, so GitHub renders the screenshots, GIF and
+# metrics on the asset folder's page even if a PR body's image links get
+# stripped by whatever posted it.
+node scripts/pr/report.mjs --before "$src/before" --after "$src/after" --assets-url . > "$dest/README.md" 2>/dev/null || true
+
 git add -f "$dest"
 git commit -q -m "PR assets for $slug (screenshots, video, metrics)
 
@@ -39,3 +44,4 @@ git rm -r -q "$dest"
 git commit -q -m "Remove PR assets from the tree (linked from the PR by ${sha:0:7})"
 
 echo "https://github.com/$repo/blob/$sha/$dest"
+echo "rendered page (screenshots, GIF, metrics): https://github.com/$repo/tree/$sha/$dest" >&2

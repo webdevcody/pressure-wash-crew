@@ -58,7 +58,9 @@ node scripts/pr/report.mjs --before .pr-capture/before --after .pr-capture/after
 git push -u origin HEAD
 ```
 
-`publish-assets.sh` adds the PNGs, GIF, MP4 and metrics under `.github/pr-assets/<branch>/` in one commit and removes them in the next, so they never land in `main`'s tree but stay reachable by SHA from the PR body. Push **after** running it.
+`publish-assets.sh` adds the PNGs, GIF, MP4, metrics and a rendered `README.md` under `.github/pr-assets/<branch>/` in one commit and removes them in the next, so they never land in `main`'s tree but stay reachable by SHA from the PR body. Push **after** running it.
+
+After opening the PR, read its body back. Some tools that post PR bodies for agents rewrite image tags and asset links into inline code. If that happened, keep the sections, put the asset folder's page (`https://github.com/<owner>/<repo>/tree/<sha>/.github/pr-assets/<branch>`, printed by the script) at the top of Screenshots and Video so the reviewer can open it, and tell the person the PR body lost its inline images. Don't drop the sections.
 
 ## 4. Write the PR body
 
