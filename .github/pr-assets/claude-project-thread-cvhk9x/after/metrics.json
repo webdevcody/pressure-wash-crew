@@ -1,0 +1,200 @@
+{
+  "url": "http://127.0.0.1:40267/?perf",
+  "sha": "84e7c9b",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "headed": false,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "seconds": 4,
+  "targetFps": 120,
+  "views": [
+    {
+      "name": "menu",
+      "screenshot": "menu.png",
+      "stats": {
+        "frames": 62,
+        "fps": 7.795826038058969,
+        "frameMs": {
+          "mean": 128.27377049180325,
+          "median": 128.80000000000018,
+          "p95": 142.6999999999989,
+          "p99": 153.5,
+          "max": 153.5
+        },
+        "cpuMs": {
+          "mean": 1.716129032269706,
+          "median": 1.3999999999068677,
+          "p95": 3.699999999953434,
+          "p99": 5,
+          "max": 5
+        },
+        "drawCalls": {
+          "mean": 29,
+          "median": 29,
+          "p95": 29,
+          "p99": 29,
+          "max": 29
+        },
+        "triangles": {
+          "mean": 25516,
+          "median": 25516,
+          "p95": 25516,
+          "p99": 25516,
+          "max": 25516
+        },
+        "slowFrames": 1
+      }
+    },
+    {
+      "name": "spawn",
+      "screenshot": "spawn.png",
+      "stats": {
+        "frames": 60,
+        "fps": 7.771440614338965,
+        "frameMs": {
+          "mean": 128.67627118644072,
+          "median": 130,
+          "p95": 147,
+          "p99": 153.70000000000073,
+          "max": 153.70000000000073
+        },
+        "cpuMs": {
+          "mean": 1.6866666666678307,
+          "median": 1.2000000000698492,
+          "p95": 5.299999999930151,
+          "p99": 7.599999999976717,
+          "max": 7.599999999976717
+        },
+        "drawCalls": {
+          "mean": 29,
+          "median": 29,
+          "p95": 29,
+          "p99": 29,
+          "max": 29
+        },
+        "triangles": {
+          "mean": 25516,
+          "median": 25516,
+          "p95": 25516,
+          "p99": 25516,
+          "max": 25516
+        },
+        "slowFrames": 1
+      }
+    },
+    {
+      "name": "spawn-spraying",
+      "screenshot": "spawn-spraying.png",
+      "stats": {
+        "frames": 60,
+        "fps": 7.9381096535486,
+        "frameMs": {
+          "mean": 125.9745762711865,
+          "median": 126.70000000000073,
+          "p95": 144.09999999999854,
+          "p99": 155.79999999999927,
+          "max": 155.79999999999927
+        },
+        "cpuMs": {
+          "mean": 1.640000000000388,
+          "median": 1.3000000000465661,
+          "p95": 4.900000000023283,
+          "p99": 6.5,
+          "max": 6.5
+        },
+        "drawCalls": {
+          "mean": 29,
+          "median": 29,
+          "p95": 29,
+          "p99": 29,
+          "max": 29
+        },
+        "triangles": {
+          "mean": 25516,
+          "median": 25516,
+          "p95": 25516,
+          "p99": 25516,
+          "max": 25516
+        },
+        "slowFrames": 1
+      }
+    },
+    {
+      "name": "yard-overview",
+      "screenshot": "yard-overview.png",
+      "stats": {
+        "frames": 62,
+        "fps": 8.036784759094084,
+        "frameMs": {
+          "mean": 124.427868852459,
+          "median": 124.29999999999563,
+          "p95": 139.8000000000029,
+          "p99": 152.09999999999854,
+          "max": 152.09999999999854
+        },
+        "cpuMs": {
+          "mean": 1.574193548394232,
+          "median": 1.2000000000698492,
+          "p95": 4.099999999976717,
+          "p99": 4.200000000069849,
+          "max": 4.200000000069849
+        },
+        "drawCalls": {
+          "mean": 29,
+          "median": 29,
+          "p95": 29,
+          "p99": 29,
+          "max": 29
+        },
+        "triangles": {
+          "mean": 25516,
+          "median": 25516,
+          "p95": 25516,
+          "p99": 25516,
+          "max": 25516
+        },
+        "slowFrames": 1
+      }
+    },
+    {
+      "name": "house-closeup-spraying",
+      "screenshot": "house-closeup-spraying.png",
+      "stats": {
+        "frames": 63,
+        "fps": 6.740449218325327,
+        "frameMs": {
+          "mean": 148.358064516129,
+          "median": 145.89999999999418,
+          "p95": 175.40000000000146,
+          "p99": 194.09999999999854,
+          "max": 194.09999999999854
+        },
+        "cpuMs": {
+          "mean": 1.6571428571358353,
+          "median": 1.400000000023283,
+          "p95": 2.900000000023283,
+          "p99": 8.300000000046566,
+          "max": 8.300000000046566
+        },
+        "drawCalls": {
+          "mean": 25,
+          "median": 25,
+          "p95": 25,
+          "p99": 25,
+          "max": 25
+        },
+        "triangles": {
+          "mean": 25478,
+          "median": 25478,
+          "p95": 25478,
+          "p99": 25478,
+          "max": 25478
+        },
+        "slowFrames": 1
+      }
+    }
+  ],
+  "capturedAt": "2026-11-24T15:55:36.668Z"
+}
