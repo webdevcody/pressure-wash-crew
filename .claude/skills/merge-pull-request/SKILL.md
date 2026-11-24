@@ -44,7 +44,7 @@ For each hotspot, write down in one line *why* both sides had to edit it. The re
 
 ## 3. Decouple, then resolve
 
-- **Refactor first, in its own commits** (`decouple: …`), on top of the branch, so the diff reviewers read is "move code" and not mixed with conflict fixes. Then `git merge origin/main` and resolve.
+- **Keep the refactor in its own commits** (`decouple: …`), separate from the merge commit, so reviewers read "moved code" apart from conflict fixes. Either order works: merge `main` in first when the refactor touches files `main` changed (so you refactor the merged code once), or refactor first when it doesn't.
 - Keep it **behavior-preserving**: same rendering, same numbers, same per-frame cost. No new allocation in `useFrame`, no React state for per-frame data.
 - Only decouple the hotspots you found. Don't redesign the codebase on a merge.
 - When resolving, keep **both** sides' intent. Read both PR descriptions; a conflict that looks like "pick one" usually means one side moved code the other edited.
