@@ -56,6 +56,7 @@ export const HOUSE = {
   eaveOverhang: 0.45, // front/back, horizontal
   rakeOverhang: 0.35, // east/west gable ends
   cornerPost: 0.16,
+  frieze: 0.14, // trim band along the top of every wall
 }
 
 export const WINDOW_TRIM = { casing: 0.09, shutterGap: 0.02, shutterWidth: 0.42, sillDrop: 0.06, sillOverhang: 0.05 }
@@ -117,6 +118,7 @@ export function trimFootprints(wall: Wall): [number, number, number, number][] {
   const half = wallLength(wall) / 2
   const post = HOUSE.cornerPost / 2
   out.push([-half, 0, -half + post, HOUSE.wallHeight], [half - post, 0, half, HOUSE.wallHeight])
+  out.push([-half, HOUSE.wallHeight - HOUSE.frieze, half, HOUSE.wallHeight])
   return out
 }
 

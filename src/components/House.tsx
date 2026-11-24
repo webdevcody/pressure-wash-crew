@@ -206,6 +206,12 @@ function buildHouse() {
     T(box(0.67, 0.54, 0.03, 0, H + R * 0.45, 0.012, wallMatrix(wall)))
   }
 
+  // Frieze board along the top of every wall (separates walls from gables/soffit).
+  for (const wall of ['front', 'back', 'east', 'west'] as Wall[]) {
+    const len = wall === 'front' || wall === 'back' ? W : Dp
+    T(box(len, HOUSE.frieze, 0.04, 0, H - HOUSE.frieze / 2, 0.02, wallMatrix(wall)))
+  }
+
   // Corner boards.
   for (const sx of [-1, 1]) {
     for (const sz of [-1, 1]) {
