@@ -4,12 +4,12 @@ import * as THREE from 'three'
 import { runtime } from '../game/runtime'
 import { useGame } from '../game/store'
 import type { WashSurface } from '../game/washSurface'
+import { WasherGun } from './WasherGun'
 
 const RAYS_PER_FRAME = 8
 const CONE_ANGLE = 0.035 // radians, half-angle of the spray cone
 const MAX_RANGE = 9
 const CLEAN_RATE = 9 // dirt units/sec removed at brush center when close
-const NOZZLE_OFFSET = new THREE.Vector3(0.22, -0.2, -0.75)
 const MAX_PARTICLES = 700
 
 const raycaster = new THREE.Raycaster()
@@ -30,7 +30,6 @@ interface Particle {
 
 export function Washer() {
   const camera = useThree((s) => s.camera)
-  const gun = useRef<THREE.Group>(null)
   const drops = useRef<THREE.InstancedMesh>(null)
   const particles = useMemo<Particle[]>(
     () =>
@@ -75,14 +74,8 @@ export function Washer() {
     const g = useGame.getState()
     const spraying = g.spraying && g.phase === 'playing' && !g.paused
 
-    // Gun follows the camera.
-    if (gun.current) {
-      gun.current.position.copy(camera.position)
-      gun.current.quaternion.copy(camera.quaternion)
-      const kick = spraying ? (Math.random() - 0.5) * 0.006 : 0
-      gun.current.children[0].position.set(kick, kick, spraying ? 0.015 : 0)
-    }
-    nozzleWorld.copy(NOZZLE_OFFSET).applyMatrix4(camera.matrixWorld)
+    // The gun model (WasherGun) runs first and publishes its tip position.
+    nozzleWorld.copy(runtime.nozzleWorld)
 
     if (spraying) {
       camera.getWorldDirection(tmpDir)
@@ -159,27 +152,7 @@ export function Washer() {
 
   return (
     <>
-      <group ref={gun}>
-        <group>
-          {/* Wand + trigger body, positioned bottom-right of view */}
-          <mesh position={[0.22, -0.2, -0.45]} rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.018, 0.018, 0.6, 8]} />
-            <meshStandardMaterial color="#4a4f55" metalness={0.2} roughness={0.5} />
-          </mesh>
-          <mesh position={[0.22, -0.2, -0.75]} rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.012, 0.028, 0.08, 8]} />
-            <meshStandardMaterial color="#d4a017" metalness={0.5} roughness={0.3} />
-          </mesh>
-          <mesh position={[0.22, -0.24, -0.17]}>
-            <boxGeometry args={[0.06, 0.16, 0.12]} />
-            <meshStandardMaterial color="#c0392b" />
-          </mesh>
-          <mesh position={[0.22, -0.33, -0.14]} rotation-x={-0.3}>
-            <boxGeometry args={[0.05, 0.16, 0.06]} />
-            <meshStandardMaterial color="#222" />
-          </mesh>
-        </group>
-      </group>
+      <WasherGun />
       <instancedMesh ref={drops} args={[undefined, undefined, MAX_PARTICLES]} frustumCulled={false}>
         <sphereGeometry args={[0.025, 6, 4]} />
         <meshBasicMaterial color="#cfeeff" transparent opacity={0.75} depthWrite={false} />
