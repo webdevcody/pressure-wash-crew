@@ -32,6 +32,23 @@ const BASE_FOV = 75
 const SPRINT_FOV = 83
 
 const euler = new THREE.Euler(0, 0, 0, 'YXZ')
+const eye = new THREE.Vector3()
+
+/**
+ * Frame order (lower runs first):
+ *   -100 player input sets the body's velocity
+ *    -50 physics step (Physics updatePriority in App.tsx), which also writes
+ *        the interpolated body transform into the RigidBody's object3D
+ *    -10 camera follows that interpolated transform
+ *     -5 gun viewmodel follows the camera (WasherGun)
+ *      0 everything else (spray raycasts read the final camera)
+ * Reading b.translation() for the camera instead would step at the 60 Hz
+ * physics rate and stutter on faster displays.
+ */
+export const INPUT_PRIORITY = -100
+export const PHYSICS_PRIORITY = -50
+export const CAMERA_PRIORITY = -10
+
 const probePos = { x: 0, y: 0, z: 0 }
 const probeRot = { x: 0, y: 0, z: 0, w: 1 }
 let probeHit = false
@@ -42,6 +59,8 @@ const onProbeHit = () => {
 
 export function Player() {
   const body = useRef<RapierRigidBody>(null)
+  const anchor = useRef<THREE.Object3D>(null)
+  const sprintingNow = useRef(false)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
   const runId = useGame((s) => s.runId)
@@ -98,7 +117,7 @@ export function Player() {
     jump.current.jumpedAt = -Infinity
   }, [runId])
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     const b = body.current
     if (!b) return
     const { phase, paused } = useGame.getState()
@@ -117,6 +136,7 @@ export function Player() {
     const moving = fx !== 0 || fz !== 0
     const sprinting = moving && (k.has('ShiftLeft') || k.has('ShiftRight'))
     const speed = sprinting ? RUN_SPEED : WALK_SPEED
+    sprintingNow.current = active && sprinting
     const yaw = runtime.look.yaw
     const sin = Math.sin(yaw)
     const cos = Math.cos(yaw)
@@ -165,19 +185,27 @@ export function Player() {
       runtime.jumpCount++
     }
     b.setLinvel({ x: vx, y: vy, z: vz }, true)
+  }, INPUT_PRIORITY)
+
+  // Camera follows the interpolated body, after the physics step.
+  useFrame((_, delta) => {
+    const a = anchor.current
+    if (!a) return
 
     // Ease the FOV toward the sprint/walk value.
     const cam = camera as THREE.PerspectiveCamera
-    const targetFov = active && sprinting ? SPRINT_FOV : BASE_FOV
+    const targetFov = sprintingNow.current ? SPRINT_FOV : BASE_FOV
     if (Math.abs(cam.fov - targetFov) > 0.01) {
       cam.fov += (targetFov - cam.fov) * Math.min(1, delta * 10)
       cam.updateProjectionMatrix()
     }
 
-    camera.position.set(p.x, p.y + EYE_HEIGHT, p.z)
-    euler.set(runtime.look.pitch, yaw, 0)
+    a.getWorldPosition(eye)
+    camera.position.set(eye.x, eye.y + EYE_HEIGHT, eye.z)
+    euler.set(runtime.look.pitch, runtime.look.yaw, 0)
     camera.quaternion.setFromEuler(euler)
-  })
+    camera.updateMatrixWorld()
+  }, CAMERA_PRIORITY)
 
   return (
     <RigidBody
@@ -189,6 +217,7 @@ export function Player() {
       ccd
     >
       <CapsuleCollider args={[CAPSULE_HALF, CAPSULE_RADIUS]} friction={0} />
+      <object3D ref={anchor} />
     </RigidBody>
   )
 }
