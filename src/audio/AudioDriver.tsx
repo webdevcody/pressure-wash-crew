@@ -12,25 +12,20 @@ const WALK_STEP = 0.42 // seconds between steps
 const RUN_STEP = 0.3
 const MIN_MOVE = 1
 
-/** Movement signals published by Player, when it provides them. */
-type MovementSignals = { grounded?: boolean; jumpCount?: number }
-
 /**
  * Turns game state into sound without touching the movement or spray code:
  * footsteps, jump grunts and landings come from the player body's velocity
- * (or `runtime.grounded` / `runtime.jumpCount` when Player publishes them),
+ * and Player's `runtime.grounded` / `runtime.jumpCount`,
  * and the spray loop follows the store's `spraying` flag. Mount inside the
  * Canvas. Per-frame work is a few comparisons and no allocations of our own.
  */
 export function AudioDriver() {
   const s = useRef({
-    prevVy: 0,
     airborne: false,
     fallSpeed: 0,
     stepTimer: 0,
     settle: 0, // seconds since the run started / player was placed
     jumpCount: -1,
-    still: 0,
   }).current
 
   useEffect(() => {
@@ -55,7 +50,6 @@ export function AudioDriver() {
     if (!b || !audio.ctx) return
     const g = useGame.getState()
     const active = g.phase === 'playing' && !g.paused
-    const signals = runtime as typeof runtime & MovementSignals
 
     const v = b.linvel()
     const vy = v.y
@@ -64,30 +58,20 @@ export function AudioDriver() {
     const quiet = !active || s.settle < 0.6
 
     // ---- jumps
-    let jumped = false
-    if (typeof signals.jumpCount === 'number') {
-      if (s.jumpCount >= 0 && signals.jumpCount !== s.jumpCount) jumped = true
-      s.jumpCount = signals.jumpCount
-    } else {
-      jumped = vy - s.prevVy > 2.5 && vy > 2
-    }
+    const jumped = s.jumpCount >= 0 && runtime.jumpCount !== s.jumpCount
+    s.jumpCount = runtime.jumpCount
     if (jumped) {
       if (!quiet) playJump()
       s.airborne = true
       s.fallSpeed = 0
     }
 
-    // ---- airborne / landing
-    if (vy < -1.5) s.airborne = true
+    // ---- airborne / landing (walking off a ledge counts as airborne too)
+    const grounded = runtime.grounded
+    if (!grounded && vy < -1.5) s.airborne = true
     if (s.airborne) s.fallSpeed = Math.max(s.fallSpeed, -vy)
-    const grounded =
-      typeof signals.grounded === 'boolean'
-        ? signals.grounded
-        : // Heuristic: a sudden stop while falling, or no vertical motion for a while.
-          !s.airborne || (s.prevVy < -1 && vy - s.prevVy > 1 && vy > -0.5)
-    s.still = Math.abs(vy) < 0.05 ? s.still + dt : 0
 
-    if (s.airborne && !jumped && (grounded || s.still > 0.2)) {
+    if (s.airborne && !jumped && grounded) {
       if (!quiet && s.fallSpeed > 2) playLand(Math.min(1, (s.fallSpeed - 2) / 8))
       s.airborne = false
       s.fallSpeed = 0
@@ -106,8 +90,6 @@ export function AudioDriver() {
       // First step lands quickly when the player starts moving.
       s.stepTimer = Math.min(s.stepTimer, 0.08)
     }
-
-    s.prevVy = vy
   })
 
   return null
