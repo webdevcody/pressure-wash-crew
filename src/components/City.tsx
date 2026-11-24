@@ -4,11 +4,8 @@ import * as THREE from 'three'
 import { buildCity, buildGround, BLOCK_PITCH, LOT_HALF } from './city/layout'
 import { makeCityMaterial } from './city/material'
 import { makeGroundTexture, makeSkylineTexture } from './city/textures'
+import { HAZE } from '../game/atmosphere'
 
-/** Haze color shared by the scene fog, the horizon ring and the sky's horizon. */
-export const CITY_FOG = '#c3cfd9'
-export const FOG_NEAR = 40
-export const FOG_FAR = 330
 
 /** Ground tiles across the city (odd, so the yard's block sits in the middle tile). */
 const GROUND_TILES = 25
@@ -27,7 +24,7 @@ export function City() {
 
   const assets = useMemo(() => {
     const ground = makeGroundTexture(gl.capabilities.getMaxAnisotropy())
-    const skyline = makeSkylineTexture(CITY_FOG)
+    const skyline = makeSkylineTexture(HAZE)
     skyline.repeat.set(3, 1)
     return {
       groundTex: ground,
