@@ -6,7 +6,7 @@ import { blocks, surfaces as surfaceDefs, YARD_HALF, type LevelSurfaceDef } from
 import { WashSurface } from '../game/washSurface'
 import { createWashMaterial } from '../game/washMaterial'
 import {
-  metricBoxGeometry,
+  mergedBlockGeometries,
   useBlockMaterials,
   useGrassMaterial,
   useYardTextures,
@@ -25,10 +25,7 @@ export function Level() {
   const blockMaterials = useBlockMaterials(yardTex)
   const grass = useGrassMaterial(yardTex, YARD_HALF * 2)
   const washMaterials = useMemo(() => washSurfaces.map((s) => washMaterialFor(s, yardTex)), [washSurfaces, yardTex])
-  const blockGeometries = useMemo(
-    () => blocks.map((b) => (b.material && b.material !== 'crate' ? metricBoxGeometry(b.size) : null)),
-    [],
-  )
+  const yardBlocks = useMemo(() => mergedBlockGeometries(blocks), [])
 
   // Publish surfaces + raycast targets for the washer.
   useEffect(() => {
@@ -62,17 +59,10 @@ export function Level() {
       </mesh>
 
       {blocks.map((b, i) => (
-        <RigidBody key={i} type="fixed" colliders="cuboid" position={b.position}>
+        <RigidBody key={i} type="fixed" colliders={b.material ? false : 'cuboid'} position={b.position}>
           {b.material ? (
-            <mesh
-              castShadow
-              receiveShadow
-              geometry={blockGeometries[i] ?? undefined}
-              material={blockMaterials[b.material]}
-              userData={{ raycastable: true }}
-            >
-              {!blockGeometries[i] && <boxGeometry args={b.size} />}
-            </mesh>
+            // Drawn below as part of a merged mesh; only the collider lives here.
+            <CuboidCollider args={[b.size[0] / 2, b.size[1] / 2, b.size[2] / 2]} />
           ) : (
             <mesh castShadow receiveShadow userData={{ raycastable: true }}>
               <boxGeometry args={b.size} />
@@ -80,6 +70,16 @@ export function Level() {
             </mesh>
           )}
         </RigidBody>
+      ))}
+      {yardBlocks.map(({ id, geometry }) => (
+        <mesh
+          key={id}
+          geometry={geometry}
+          material={blockMaterials[id]}
+          castShadow
+          receiveShadow
+          userData={{ raycastable: true }}
+        />
       ))}
 
       {washSurfaces.map((s, i) => (

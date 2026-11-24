@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import grassAlbedo from '../../assets/textures/yard/grass_albedo.jpg'
 import grassNormal from '../../assets/textures/yard/grass_normal.jpg'
 import grassMacro from '../../assets/textures/yard/grass_macro.png'
@@ -47,7 +48,7 @@ export function useYardTextures(): YardTextures {
   useMemo(() => {
     for (const [key, t] of Object.entries(tex)) {
       t.wrapS = t.wrapT = THREE.RepeatWrapping
-      t.anisotropy = 8
+      t.anisotropy = 4
       t.colorSpace = key.endsWith('Albedo') ? THREE.SRGBColorSpace : THREE.NoColorSpace
       t.needsUpdate = true
     }
@@ -163,4 +164,29 @@ export function metricBoxGeometry([w, h, d]: readonly [number, number, number]):
   }
   uv.needsUpdate = true
   return g
+}
+
+/**
+ * One merged geometry per yard material for all textured blocks, so the four
+ * walls, four caps, fence parts and crates cost one draw call per material
+ * (per pass) instead of one each. Colliders stay per block.
+ */
+export function mergedBlockGeometries(
+  defs: readonly { position: readonly [number, number, number]; size: readonly [number, number, number]; material?: BlockMaterialId }[],
+): { id: BlockMaterialId; geometry: THREE.BufferGeometry }[] {
+  const byId = new Map<BlockMaterialId, THREE.BufferGeometry[]>()
+  for (const b of defs) {
+    if (!b.material) continue
+    const g = b.material === 'crate' ? new THREE.BoxGeometry(...b.size) : metricBoxGeometry(b.size)
+    g.translate(...b.position)
+    const list = byId.get(b.material) ?? []
+    list.push(g)
+    byId.set(b.material, list)
+  }
+  return [...byId].map(([id, parts]) => {
+    const geometry = mergeGeometries(parts)
+    parts.forEach((p) => p.dispose())
+    geometry.computeBoundingSphere()
+    return { id, geometry }
+  })
 }
