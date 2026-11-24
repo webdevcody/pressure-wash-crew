@@ -6,6 +6,9 @@
     { "name": "spawn-spraying", "phase": "playing", "spray": true },
     { "name": "yard-overview", "phase": "playing", "pose": { "pos": [12, 1, 12], "lookAt": [0, 1, -4] } },
     { "name": "house-closeup-spraying", "phase": "playing", "spray": true, "pose": { "pos": [0, 1, 1.5], "lookAt": [0, 1.5, -3] } },
+    { "name": "driveway-spraying", "phase": "playing", "spray": true, "pose": { "pos": [7, 1, 6.5], "lookAt": [7, 0, 1] } },
+    { "name": "fence-closeup", "phase": "playing", "pose": { "pos": [-4.5, 1, 4], "lookAt": [-7, 0.6, 1.5] } },
+    { "name": "perimeter-wall", "phase": "playing", "pose": { "pos": [-10, 1, -11], "lookAt": [-6, 0.8, -15] } },
     { "name": "house-corner", "phase": "playing", "pose": { "pos": [10, 1, 4], "lookAt": [0, 2.5, -6] } },
     { "name": "house-door-spraying", "phase": "playing", "spray": true, "pose": { "pos": [1.5, 1, 0], "lookAt": [1.5, 1.8, -3] } }
   ]
