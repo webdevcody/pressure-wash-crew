@@ -113,7 +113,7 @@ Take the **higher** of the report's suggested risk (`<!-- suggested-risk: … --
 - **Medium:** gameplay logic or state changes, a small measurable perf change (the report's Medium band), or a new runtime dependency.
 - **Low:** docs, tooling, HUD text or CSS, and no measurable change in the Metrics table.
 
-On a real GPU the report judges frame and CPU time by how much of the 8.33 ms budget a change eats (mean frame time; +0.83 ms or +50% ⇒ High, +0.25 ms and +10% ⇒ Medium), because at several hundred FPS a relative change is mostly the 0.1 ms rounding of browser timestamps. A PR rated High only because the cloud couldn't measure real FPS should say so in the Risk line, so Cody knows a headed run on the Mac can lower it.
+On a real GPU the report judges frame and CPU time by how much of the 8.33 ms budget a change eats (mean frame time; +0.83 ms or +50% ⇒ High, +0.25 ms and +10% ⇒ Medium), because at several hundred FPS a relative change is mostly the 0.1 ms rounding of browser timestamps. One page load can still be off by up to ~0.4 ms on a single view (seen on `house-closeup-spraying` while checking PRs 5–8), so if a frame-time Medium or High rests on one view, re-run `pnpm pr:capture --headed --channel chrome --samples 3` once and only count it if it reproduces. A PR rated High only because the cloud couldn't measure real FPS should say so in the Risk line, so Cody knows a headed run on the Mac can lower it.
 
 Never rate lower than the suggestion without saying why in the Risk line.
 
