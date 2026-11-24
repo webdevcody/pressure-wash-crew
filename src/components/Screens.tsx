@@ -26,7 +26,10 @@ export function MenuScreen() {
           <div><kbd>Mouse</kbd> look</div>
           <div><kbd>Left click</kbd> spray</div>
           <div><kbd>Shift</kbd> run · <kbd>Space</kbd> jump</div>
+          <div><kbd>Q</kbd>/<kbd>E</kbd> switch nozzle</div>
+          <div><kbd>R</kbd> turn fan nozzles</div>
         </div>
+        <p className="tip-line">Tough spots need the 0° tip, streaks the 15° line, oil needs soap first.</p>
         {bestTime != null && <p className="best">Fastest time: {formatTime(bestTime)}</p>}
         <button
           id="start-button"

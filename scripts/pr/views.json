@@ -5,6 +5,8 @@
     { "name": "spawn", "phase": "playing" },
     { "name": "spawn-spraying", "phase": "playing", "spray": true },
     { "name": "yard-overview", "phase": "playing", "pose": { "pos": [12, 1, 12], "lookAt": [0, 1, -4] } },
-    { "name": "house-closeup-spraying", "phase": "playing", "spray": true, "pose": { "pos": [0, 1, 1.5], "lookAt": [0, 1.5, -3] } }
+    { "name": "house-closeup-spraying", "phase": "playing", "spray": true, "pose": { "pos": [0, 1, 1.5], "lookAt": [0, 1.5, -3] } },
+    { "name": "house-stains", "phase": "playing", "pose": { "pos": [0, 0.85, 2.5], "lookAt": [0, 1.5, -3] } },
+    { "name": "driveway-stains", "phase": "playing", "pose": { "pos": [7, 0.85, 7.5], "lookAt": [7, 0, 1.5] } }
   ]
 }

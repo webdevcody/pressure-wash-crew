@@ -1,16 +1,17 @@
 import { formatTime, useGame } from '../game/store'
+import { AimHint, Crosshair, NozzlePicker } from './NozzleHud'
 
 export function Hud() {
   const elapsed = useGame((s) => s.elapsed)
   const remaining = useGame((s) => s.remaining)
   const surfaces = useGame((s) => s.surfaces)
   const bestTime = useGame((s) => s.bestTime)
-  const spraying = useGame((s) => s.spraying)
   const pct = Math.max(0, remaining * 100)
 
   return (
     <div className="hud">
-      <div className={`crosshair ${spraying ? 'spraying' : ''}`} />
+      <Crosshair />
+      <AimHint />
 
       <div className="hud-top">
         <div className="hud-label">Dirt remaining</div>
@@ -37,7 +38,9 @@ export function Hud() {
         })}
       </ul>
 
-      <div className="hud-hint">Hold left mouse to spray · WASD to move · Shift to run · Esc to pause</div>
+      <NozzlePicker />
+
+      <div className="hud-hint">Hold left mouse to spray · Q/E switch nozzle · WASD to move · Shift to run · Esc to pause</div>
     </div>
   )
 }

@@ -10,6 +10,7 @@ import { FINISH_THRESHOLD, useGame } from '../game/store'
 
 export function Level() {
   const runId = useGame((s) => s.runId)
+  const seed = useGame((s) => s.seed)
   const group = useRef<THREE.Group>(null)
 
   const washSurfaces = useMemo(() => surfaceDefs.map((d) => new WashSurface(d)), [])
@@ -29,10 +30,10 @@ export function Level() {
     }
   }, [washSurfaces])
 
-  // Fresh dirt every run.
+  // Fresh dirt and a new stain layout every run.
   useEffect(() => {
-    washSurfaces.forEach((s) => s.reset())
-  }, [runId, washSurfaces])
+    washSurfaces.forEach((s) => s.reset(seed))
+  }, [runId, seed, washSurfaces])
 
   return (
     <group ref={group}>
