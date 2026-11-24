@@ -6,6 +6,7 @@ import { Level } from './components/Level'
 import { Player } from './components/Player'
 import { Washer } from './components/Washer'
 import { Hud } from './components/Hud'
+import { AudioDriver } from './audio/AudioDriver'
 import { MenuScreen, PauseScreen, ScoreScreen } from './components/Screens'
 import { useGame } from './game/store'
 import { installDebugApi, statsOverlay } from './dev/debug'
@@ -53,6 +54,7 @@ export function App() {
           </Physics>
         </Suspense>
         <Washer />
+        <AudioDriver />
         {statsOverlay && <Stats />}
       </Canvas>
 
