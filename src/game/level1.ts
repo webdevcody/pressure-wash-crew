@@ -12,10 +12,7 @@ export interface BlockDef {
 export const SPAWN: [number, number, number] = [0, 1, 7]
 
 export const blocks: BlockDef[] = [
-  // House
-  { position: [0, 2, -6], size: [8, 4, 6], color: '#b9b9b9' },
-  // Roof slab
-  { position: [0, 4.15, -6], size: [8.6, 0.3, 6.6], color: '#8a8a8a' },
+  // The house is built by components/House.tsx from HOUSE below.
   // Garden fence (west)
   { position: [-7, 0.6, 2], size: [0.2, 1.2, 8], color: '#a9a9a9' },
   // Crates for cover / scale reference
@@ -27,6 +24,91 @@ export const blocks: BlockDef[] = [
   { position: [-15, 0.75, 0], size: [0.4, 1.5, 30], color: '#7d7d7d' },
   { position: [15, 0.75, 0], size: [0.4, 1.5, 30], color: '#7d7d7d' },
 ]
+
+// ---------------------------------------------------------------------------
+// House
+
+export type Wall = 'front' | 'east' | 'back' | 'west'
+
+/** Footprint x -4..4, z -9..-3, single storey with a gable roof (ridge runs east-west). */
+export const HOUSE = {
+  center: [0, -6] as [number, number],
+  width: 8, // along x
+  depth: 6, // along z
+  wallHeight: 3,
+  roofRise: 1.8, // wall top to ridge
+  eaveOverhang: 0.45, // front/back, horizontal
+  rakeOverhang: 0.35, // east/west gable ends
+  cornerPost: 0.16,
+}
+
+export const WINDOW_TRIM = { casing: 0.09, shutterGap: 0.02, shutterWidth: 0.42, sillDrop: 0.06, sillOverhang: 0.05 }
+export const DOOR_TRIM = { casing: 0.12, stepWidth: 1.6, stepDepth: 0.8, stepHeight: 0.14 }
+
+/**
+ * Windows and doors, placed on a wall. `u` is the opening's center measured
+ * along the wall from its middle, to the right when you face the wall from
+ * outside; `y` is the bottom of the opening.
+ */
+export interface Opening {
+  kind: 'window' | 'door'
+  wall: Wall
+  u: number
+  y: number
+  w: number
+  h: number
+}
+
+const win = (wall: Wall, u: number): Opening => ({ kind: 'window', wall, u, y: 0.95, w: 1.1, h: 1.3 })
+
+export const openings: Opening[] = [
+  win('front', -2.45),
+  { kind: 'door', wall: 'front', u: 0, y: 0, w: 1.0, h: 2.1 },
+  win('front', 2.45),
+  win('east', -1.4),
+  win('east', 1.4),
+  win('back', -2),
+  win('back', 2),
+  win('west', 0),
+]
+
+/** Porch lantern beside the front door: center u, bottom y, size. */
+export const LANTERN = { wall: 'front' as Wall, u: 0.9, y: 1.72, w: 0.18, h: 0.4 }
+
+/** Wall length (along u) of each wall. */
+export function wallLength(wall: Wall) {
+  return wall === 'front' || wall === 'back' ? HOUSE.width : HOUSE.depth
+}
+
+/** Wall-space rectangles [u0, y0, u1, y1] covered by trim (casings, shutters, posts, step...). */
+export function trimFootprints(wall: Wall): [number, number, number, number][] {
+  const t = WINDOW_TRIM
+  const out: [number, number, number, number][] = []
+  for (const o of openings) {
+    if (o.wall !== wall) continue
+    if (o.kind === 'window') {
+      const half = o.w / 2 + t.casing + t.shutterGap + t.shutterWidth
+      out.push([o.u - half, o.y - t.casing - t.sillDrop, o.u + half, o.y + o.h + t.casing])
+    } else {
+      const half = o.w / 2 + DOOR_TRIM.casing
+      out.push([o.u - half, 0, o.u + half, o.y + o.h + DOOR_TRIM.casing])
+      out.push([o.u - DOOR_TRIM.stepWidth / 2, 0, o.u + DOOR_TRIM.stepWidth / 2, DOOR_TRIM.stepHeight])
+    }
+  }
+  if (LANTERN.wall === wall) {
+    out.push([LANTERN.u - LANTERN.w / 2, LANTERN.y, LANTERN.u + LANTERN.w / 2, LANTERN.y + LANTERN.h])
+  }
+  const half = wallLength(wall) / 2
+  const post = HOUSE.cornerPost / 2
+  out.push([-half, 0, -half + post, HOUSE.wallHeight], [half - post, 0, half, HOUSE.wallHeight])
+  return out
+}
+
+/** Holes for a washable surface covering a whole wall, in surface meters from its bottom-left. */
+function wallHoles(wall: Wall): [number, number, number, number][] {
+  const half = wallLength(wall) / 2
+  return trimFootprints(wall).map(([u0, y0, u1, y1]) => [u0 + half, y0, u1 + half, y1])
+}
 
 /**
  * Washable faces. Each is a plane sitting 1cm in front of a blocker face
@@ -40,9 +122,11 @@ export const surfaces: SurfaceDef[] = [
     height: 3,
     position: [0, 1.5, -2.99],
     rotation: [0, 0, 0],
-    clean: '#e8e4da',
+    clean: '#ffffff',
     dirt: '#9a8560',
     seed: 11,
+    holes: wallHoles('front'),
+    look: 'siding',
   },
   {
     id: 'house-east',
@@ -51,9 +135,11 @@ export const surfaces: SurfaceDef[] = [
     height: 3,
     position: [4.01, 1.5, -6],
     rotation: [0, H, 0],
-    clean: '#e8e4da',
+    clean: '#ffffff',
     dirt: '#8a9862',
     seed: 23,
+    holes: wallHoles('east'),
+    look: 'siding',
   },
   {
     id: 'driveway',

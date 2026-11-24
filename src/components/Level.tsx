@@ -7,12 +7,18 @@ import { blocks, surfaces as surfaceDefs } from '../game/level1'
 import { WashSurface } from '../game/washSurface'
 import { runtime, totalRemaining } from '../game/runtime'
 import { FINISH_THRESHOLD, useGame } from '../game/store'
+import { createWashMaterial } from '../game/washMaterial'
+import { House, sidingLook } from './House'
 
 export function Level() {
   const runId = useGame((s) => s.runId)
   const group = useRef<THREE.Group>(null)
 
   const washSurfaces = useMemo(() => surfaceDefs.map((d) => new WashSurface(d)), [])
+  const washMaterials = useMemo(
+    () => washSurfaces.map((s) => (s.def.look === 'siding' ? createWashMaterial(s, sidingLook()) : null)),
+    [washSurfaces],
+  )
 
   // Publish surfaces + raycast targets for the washer.
   useEffect(() => {
@@ -64,15 +70,19 @@ export function Level() {
         </RigidBody>
       ))}
 
-      {washSurfaces.map((s) => (
+      <House />
+
+      {washSurfaces.map((s, i) => (
         <mesh
           key={s.def.id}
           position={s.def.position}
           rotation={s.def.rotation}
+          receiveShadow
           userData={{ raycastable: true, surface: s }}
+          material={washMaterials[i] ?? undefined}
         >
           <planeGeometry args={[s.def.width, s.def.height]} />
-          <meshStandardMaterial map={s.texture} roughness={0.9} />
+          {!washMaterials[i] && <meshStandardMaterial map={s.texture} roughness={0.9} />}
         </mesh>
       ))}
 
