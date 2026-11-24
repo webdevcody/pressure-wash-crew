@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { runtime } from '../game/runtime'
 import { checkSurfaceCompletion, onSurfaceCleaned } from '../game/surfaceEvents'
 import type { WashSurface } from '../game/washSurface'
-import { installAudioUnlock, playDing } from './ding'
+import { playDing } from './ding'
 
 /*
  * "Wall finished" celebration: when a surface hits fully clean it flashes
@@ -93,8 +93,6 @@ export function Celebrations() {
     }),
     [],
   )
-
-  useEffect(() => installAudioUnlock(), [])
 
   // Hide every confetti instance until it's spawned.
   useEffect(() => {

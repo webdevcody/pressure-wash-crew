@@ -4,53 +4,18 @@
  * high note that rings out, plus a short airy pop for the confetti.
  */
 
-let ctx: AudioContext | null = null
-let master: GainNode | null = null
+import { audio } from '../audio/engine'
+
 let lastDing = -1
 
-function getContext(): AudioContext | null {
-  if (ctx) return ctx
-  const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-  if (!Ctor) return null
-  try {
-    ctx = new Ctor()
-  } catch {
-    return null
-  }
-  master = ctx.createGain()
-  master.gain.value = 0.5
-  master.connect(ctx.destination)
-  return ctx
-}
-
-/**
- * Browsers only let audio start after a user gesture. Call this from the
- * first click/keypress so the context is running by the time a wall is done.
- */
-export function installAudioUnlock() {
-  const unlock = () => {
-    const c = getContext()
-    if (c && c.state === 'suspended') c.resume().catch(() => {})
-    window.removeEventListener('pointerdown', unlock, true)
-    window.removeEventListener('keydown', unlock, true)
-  }
-  window.addEventListener('pointerdown', unlock, true)
-  window.addEventListener('keydown', unlock, true)
-  return () => {
-    window.removeEventListener('pointerdown', unlock, true)
-    window.removeEventListener('keydown', unlock, true)
-  }
-}
-
-/** Play the chime now. Safe to call before audio is unlocked (it's skipped). */
+/** Play the chime now, on the shared sfx bus. Skipped until audio is unlocked. */
 export function playDing() {
-  const c = getContext()
-  if (!c || !master) return
-  if (c.state === 'suspended') c.resume().catch(() => {})
+  const { ctx, sfx } = audio
+  if (!ctx || !sfx) return
   // Several walls finishing in the same instant get one chime, not a pile-up.
-  if (lastDing >= 0 && c.currentTime - lastDing < 0.2) return
-  lastDing = c.currentTime
-  scheduleDing(c, master, c.currentTime + 0.01)
+  if (lastDing >= 0 && ctx.currentTime - lastDing < 0.2) return
+  lastDing = ctx.currentTime
+  scheduleDing(ctx, sfx, ctx.currentTime + 0.01)
 }
 
 // C6 E6 G6, then C7 rings out.
