@@ -1,6 +1,6 @@
 ---
 name: create-pull-request
-description: Use whenever you open or prepare a pull request in this repo. Captures before/after screenshots, a video walkthrough, and frame time / FPS / triangle / draw-call metrics against the 120 FPS target, then writes the PR body with Metrics and Risk sections.
+description: Use whenever you open or prepare a pull request in this repo. Captures before/after screenshots, a video walkthrough, and frame time / FPS / triangle / draw-call metrics against the 120 FPS target and main's real-GPU baseline (perf/baseline.json), then writes the PR body with Metrics and Risk sections.
 ---
 
 # Create a pull request
@@ -36,7 +36,7 @@ The capture runs the same scripted views and walkthrough on the base branch and 
 ```bash
 pnpm pr:capture                                  # base = origin/main
 pnpm pr:capture --scenario scripts/pr/scenarios/<feature>.mjs
-pnpm pr:capture --headed                         # real GPU: use for absolute FPS
+pnpm pr:capture --headed --channel chrome        # real GPU (Cody's Mac): absolute FPS + baseline check
 ```
 
 This builds `origin/main` (in a worktree) and your working tree as production bundles, serves both, and for each one records:
@@ -44,9 +44,27 @@ This builds `origin/main` (in a worktree) and your working tree as production bu
 - `<view>.png` screenshots and `metrics.json` (frame ms median/p95, FPS, CPU ms, draw calls, triangles per view)
 - `walkthrough.webm`, plus `.mp4` and `.gif` when `ffmpeg` is installed
 
-then writes `.pr-capture/report.md`. Other flags: `--base <ref>`, `--seconds <n>`, `--views <file>`, `--no-video`, `--after-only`.
+then writes `.pr-capture/report.md`. Other flags: `--base <ref>`, `--seconds <n>`, `--samples <n>` (median of n samples per view; use 3 on a real GPU), `--channel chrome` (installed Google Chrome instead of Playwright's Chromium), `--dpr <n>`, `--views <file>`, `--no-video`, `--after-only`.
 
-Frame time is measured with vsync off, so it is real throughput, not a 60 Hz cap. In a cloud container the GPU is software (SwiftShader): absolute FPS there is far below real hardware and the report says so. Use the before → after deltas, and run `--headed` on a machine with a GPU when the absolute 120 FPS number matters.
+Frame time is measured with vsync off (`--disable-gpu-vsync --disable-frame-rate-limit`), so it is real throughput, not the display's 60/120 Hz cap. If every view lands on a refresh rate (60, 120, 144 …) the capture warns that the browser ignored the flags and the report says the numbers are a cap.
+
+In a cloud container the GPU is software (SwiftShader): absolute FPS there is far below real hardware and the report says so. Use the before → after deltas, and run `--headed` on a machine with a GPU when the absolute 120 FPS number matters.
+
+### The main baseline (`perf/baseline.json`)
+
+`perf/baseline.json` holds main's frame time, FPS, CPU time, draw calls and triangles per view, measured headed with vsync off on Cody's MacBook Pro (M3 Pro, Google Chrome). The report adds an **Against the main baseline** table under Metrics:
+
+- On the baseline's setup (same GPU renderer, headed, same viewport and DPR) it compares frame time, p95, CPU time, draw calls and triangles, and regressions count toward the suggested risk.
+- Anywhere else (the cloud's SwiftShader, another machine) it only compares draw calls and triangles, which don't depend on the machine, and says so.
+- If **Before** (current main) is already as far off the baseline as **After**, the row shows ↔️ *main drift* and doesn't count against the PR.
+
+Refresh the baseline on the same Mac when a merged change moves performance on purpose, or when reports keep showing main drift. Commit the new file in its own PR (Risk: Low, tooling) with the old → new numbers in the body:
+
+```bash
+pnpm perf:baseline --channel chrome      # builds origin/main, 3 headed runs × 3 samples per view
+```
+
+It refuses to write a software-GPU or vsync-capped result.
 
 **Look at the output before using it.** Open the after screenshots and a few frames of the GIF and confirm they show your feature. If a view shows the sky or a wall, fix its pose and re-run.
 
@@ -91,9 +109,11 @@ One line on why, naming the metric or code path that drives the rating.
 
 Take the **higher** of the report's suggested risk (`<!-- suggested-risk: … -->` at the end of `report.md`) and your own judgment:
 
-- **High: could hurt game performance.** Any view drops below 120 FPS on a real GPU, frame time regresses past the report's High band, triangles or draw calls rise more than 25%, *or* the change touches a per-frame hot path even when the numbers look fine: `useFrame` loops, the Washer raycasts or particles, dirt mask uploads, lights and shadows, renderer or `Canvas` settings, texture or geometry sizes, physics settings, post-processing.
+- **High: could hurt game performance.** Any view drops below 120 FPS on a real GPU, frame time regresses past the report's High band (before → after, or against the main baseline), triangles or draw calls rise more than 25%, *or* the change touches a per-frame hot path even when the numbers look fine: `useFrame` loops, the Washer raycasts or particles, dirt mask uploads, lights and shadows, renderer or `Canvas` settings, texture or geometry sizes, physics settings, post-processing.
 - **Medium:** gameplay logic or state changes, a small measurable perf change (the report's Medium band), or a new runtime dependency.
 - **Low:** docs, tooling, HUD text or CSS, and no measurable change in the Metrics table.
+
+On a real GPU the report judges frame and CPU time by how much of the 8.33 ms budget a change eats (mean frame time; +0.83 ms or +50% ⇒ High, +0.25 ms and +10% ⇒ Medium), because at several hundred FPS a relative change is mostly the 0.1 ms rounding of browser timestamps. A PR rated High only because the cloud couldn't measure real FPS should say so in the Risk line, so Cody knows a headed run on the Mac can lower it.
 
 Never rate lower than the suggestion without saying why in the Risk line.
 
