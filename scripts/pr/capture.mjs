@@ -112,6 +112,9 @@ for (const view of views) {
   if (view.phase === 'playing') await startRun(page)
   if (view.pose) await pose(page, view.pose)
   if (view.spray) await spray(page, true)
+  // Optional JS run in the page before sampling (e.g. trigger an effect).
+  // Builds that lack what it calls should no-op (use `?.`).
+  if (view.eval) await page.evaluate(view.eval)
   await sleep(view.settleMs ?? 1000)
 
   // At least `seconds`, and keep going (up to 5x) until 60 frames are in,
