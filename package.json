@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "pr:capture": "node scripts/pr/run.mjs",
-    "pr:report": "node scripts/pr/report.mjs"
+    "pr:report": "node scripts/pr/report.mjs",
+    "perf:baseline": "node scripts/pr/baseline.mjs"
   },
   "packageManager": "pnpm@10.28.0",
   "dependencies": {
