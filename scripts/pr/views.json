@@ -1,5 +1,5 @@
 {
-  "$comment": "Fixed camera views captured for every PR (screenshot + perf sample each). Add a view that frames your feature. 'pose' needs the in-app debug API (src/dev/debug.ts); builds without it skip posed views. Player y=1 is standing on the ground (eye at 1.65).",
+  "$comment": "Fixed camera views captured for every PR (screenshot + perf sample each). Add a view that frames your feature. 'pose' needs the in-app debug API (src/dev/debug.ts); builds without it skip posed views. Player y=1 is standing on the ground (eye at 1.65). Optional 'eval' is JS run in the page after posing (e.g. to trigger an effect); keep it a no-op on builds that lack it. Views run in order on one page, so put views that leave things running last.",
   "views": [
     { "name": "menu", "phase": "menu" },
     { "name": "spawn", "phase": "playing" },
@@ -7,6 +7,7 @@
     { "name": "yard-overview", "phase": "playing", "pose": { "pos": [12, 1, 12], "lookAt": [0, 1, -4] } },
     { "name": "house-closeup-spraying", "phase": "playing", "spray": true, "pose": { "pos": [0, 1, 1.5], "lookAt": [0, 1.5, -3] } },
     { "name": "house-stains", "phase": "playing", "pose": { "pos": [0, 0.85, 2.5], "lookAt": [0, 1.5, -3] } },
-    { "name": "driveway-stains", "phase": "playing", "pose": { "pos": [7, 0.85, 7.5], "lookAt": [7, 0, 1.5] } }
+    { "name": "driveway-stains", "phase": "playing", "pose": { "pos": [7, 0.85, 7.5], "lookAt": [7, 0, 1.5] } },
+    { "name": "wall-celebration", "phase": "playing", "pose": { "pos": [1.5, 1, 4], "lookAt": [0, 1.5, -3] }, "eval": "setInterval(() => window.__pwc.celebrate?.('house-front'), 800)", "settleMs": 600 }
   ]
 }

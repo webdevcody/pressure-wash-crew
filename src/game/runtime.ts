@@ -14,6 +14,10 @@ export const runtime = {
   keys: new Set<string>(),
   /** The player's physics body, once mounted. */
   player: null as RapierRigidBody | null,
+  /** True while the player is standing on something (ground probe hit this frame). */
+  grounded: false,
+  /** Increments each time a jump actually starts. */
+  jumpCount: 0,
 }
 
 export function totalRemaining(): number {

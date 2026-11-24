@@ -6,6 +6,8 @@ import { Level } from './components/Level'
 import { Player } from './components/Player'
 import { Washer } from './components/Washer'
 import { Hud } from './components/Hud'
+import { Celebrations } from './effects/Celebrations'
+import { CleanToast } from './effects/CleanToast'
 import { MenuScreen, PauseScreen, ScoreScreen } from './components/Screens'
 import { useGame } from './game/store'
 import { installDebugApi, statsOverlay } from './dev/debug'
@@ -53,10 +55,12 @@ export function App() {
           </Physics>
         </Suspense>
         <Washer />
+        <Celebrations />
         {statsOverlay && <Stats />}
       </Canvas>
 
       {phase === 'playing' && <Hud />}
+      {phase === 'playing' && <CleanToast />}
       {phase === 'playing' && paused && <PauseScreen />}
       {phase === 'menu' && <MenuScreen />}
       {phase === 'finished' && <ScoreScreen />}
