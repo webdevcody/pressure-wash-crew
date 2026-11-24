@@ -154,7 +154,8 @@ export class WashSurface {
     this.pixels[o] = clamp255(this.cleanRGB[0] + (dr - this.cleanRGB[0]) * d)
     this.pixels[o + 1] = clamp255(this.cleanRGB[1] + (dg - this.cleanRGB[1]) * d)
     this.pixels[o + 2] = clamp255(this.cleanRGB[2] + (db - this.cleanRGB[2]) * d)
-    this.pixels[o + 3] = 255
+    // Alpha = stain coverage, used by textured wash materials (washMaterial.ts).
+    this.pixels[o + 3] = clamp255(d * 255)
   }
 }
 
