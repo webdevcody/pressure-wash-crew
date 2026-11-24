@@ -10,33 +10,6 @@ canvas { display: block; }
   transition: transform .08s;
 }
 .crosshair.spraying { transform: scale(1.6); border-color: #8fd3ff; }
-.crosshair.point { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: rgba(255,255,255,.9); }
-.crosshair.cone { width: 16px; height: 16px; margin: -8px 0 0 -8px; }
-.crosshair.soap { width: 26px; height: 26px; margin: -13px 0 0 -13px; border-style: dashed; }
-.crosshair.fan { height: 6px; margin: -3px 0 0 -14px; width: 28px; border-radius: 3px; }
-.crosshair.fan.wide40 { width: 64px; margin-left: -32px; }
-.crosshair.fan.vertical { width: 6px; height: 28px; margin: -14px 0 0 -3px; }
-.crosshair.fan.vertical.wide40 { height: 64px; margin-top: -32px; }
-
-.aim-hint {
-  position: absolute; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); white-space: nowrap;
-  font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 10px; background: rgba(0,0,0,.4); text-shadow: 0 1px 2px #000;
-}
-.aim-hint.warn { color: #ffcf6b; }
-.aim-hint.good { color: #9ff0a8; }
-
-.nozzle-picker { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.nozzle-row { display: flex; align-items: center; gap: 6px; }
-.nozzle-chip {
-  display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; font-size: 13px;
-  background: rgba(0,0,0,.4); border: 2px solid transparent; opacity: .65; transition: opacity .1s, transform .1s;
-}
-.nozzle-chip.active { opacity: 1; border-color: #8fe3ff; background: rgba(10,30,45,.75); transform: translateY(-3px); }
-.nozzle-chip .tip { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,.6); }
-.nozzle-label { font-weight: 800; }
-.nozzle-name { opacity: .8; }
-.nozzle-blurb { font-size: 13px; text-shadow: 0 1px 2px #000; opacity: .9; }
-.tip-line { font-size: 13px; opacity: .8; }
 
 .hud-top { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); text-align: center; width: 280px; }
 .hud-label { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; text-shadow: 0 1px 2px #000; }

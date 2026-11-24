@@ -1,5 +1,6 @@
 import { formatTime, useGame } from '../game/store'
 import { AimHint, Crosshair, NozzlePicker } from './NozzleHud'
+import { HudHint } from './ControlsHelp'
 
 export function Hud() {
   const elapsed = useGame((s) => s.elapsed)
@@ -40,7 +41,7 @@ export function Hud() {
 
       <NozzlePicker />
 
-      <div className="hud-hint">Hold left mouse to spray · Q/E switch nozzle · WASD to move · Shift to run · Esc to pause</div>
+      <HudHint />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { formatTime, useGame } from '../game/store'
+import { MenuControls } from './ControlsHelp'
 
 function lockPointer() {
   const canvas = document.querySelector('canvas')
@@ -21,15 +22,7 @@ export function MenuScreen() {
         <h1>Pressure Wash Crew</h1>
         <p className="sub">Level 1 · The Backyard</p>
         <p>Blast every dirty surface clean as fast as you can.</p>
-        <div className="controls">
-          <div><kbd>WASD</kbd> move</div>
-          <div><kbd>Mouse</kbd> look</div>
-          <div><kbd>Left click</kbd> spray</div>
-          <div><kbd>Shift</kbd> run · <kbd>Space</kbd> jump</div>
-          <div><kbd>Q</kbd>/<kbd>E</kbd> switch nozzle</div>
-          <div><kbd>R</kbd> turn fan nozzles</div>
-        </div>
-        <p className="tip-line">Tough spots need the 0° tip, streaks the 15° line, oil needs soap first.</p>
+        <MenuControls />
         {bestTime != null && <p className="best">Fastest time: {formatTime(bestTime)}</p>}
         <button
           id="start-button"

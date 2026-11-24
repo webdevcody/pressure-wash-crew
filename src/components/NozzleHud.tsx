@@ -1,3 +1,4 @@
+import './NozzleHud.css'
 import { NOZZLES } from '../game/nozzles'
 import { STAINS, STAIN_GRIME, STAIN_MILDEW, cleaningPower } from '../game/stains'
 import { useGame } from '../game/store'
