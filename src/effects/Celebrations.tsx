@@ -146,10 +146,12 @@ export function Celebrations() {
           c.pos[i * 3] = tmpPos.x
           c.pos[i * 3 + 1] = tmpPos.y
           c.pos[i * 3 + 2] = tmpPos.z
-          const out = 2.5 + Math.random() * 3.5
+          // Floors (normal pointing up) get a gentler fountain so it stays in view.
+          const flat = Math.abs(tmpNormal.y)
+          const out = (2.5 + Math.random() * 3.5) * (1 - 0.45 * flat)
           const sx = (Math.random() - 0.5) * 3
           const sy = (Math.random() - 0.5) * 3
-          const up = 1.5 + Math.random() * 2.5
+          const up = (1.5 + Math.random() * 2.5) * (1 - flat)
           c.vel[i * 3] = tmpNormal.x * out + tmpTanX.x * sx + tmpTanY.x * sy
           c.vel[i * 3 + 1] = tmpNormal.y * out + tmpTanX.y * sx + tmpTanY.y * sy + up
           c.vel[i * 3 + 2] = tmpNormal.z * out + tmpTanX.z * sx + tmpTanY.z * sy

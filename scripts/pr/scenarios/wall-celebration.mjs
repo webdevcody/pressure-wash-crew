@@ -13,7 +13,7 @@ export default async ({ page, sleep, startRun, pose, spray }) => {
   await spray(false)
   await finish('house-front')
   await sleep(4000)
-  await pose({ pos: [-2, 1, 4], lookAt: [-6.9, 0.6, 1.5] })
+  await pose({ pos: [-4, 1, 6], lookAt: [-6.9, 0.6, 2] })
   await sleep(800)
   await finish('fence')
   await sleep(4000)
