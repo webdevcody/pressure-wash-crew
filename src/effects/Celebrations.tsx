@@ -62,7 +62,7 @@ export function Celebrations() {
           opacity: 0,
           depthWrite: false,
           toneMapped: false,
-          side: THREE.DoubleSide,
+          // Front side only: a transparent DoubleSide material costs two draw calls.
           // Sit just in front of the wall it covers without z-fighting.
           polygonOffset: true,
           polygonOffsetFactor: -2,
@@ -170,7 +170,7 @@ export function Celebrations() {
 
   useFrame((_, rawDt) => {
     checkSurfaceCompletion()
-    const dt = Math.min(rawDt, 0.05)
+    const dt = Math.min(rawDt, 0.1)
 
     for (let k = 0; k < flashes.length; k++) {
       const f = flashes[k]
