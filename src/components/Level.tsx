@@ -15,6 +15,7 @@ import {
 } from './yard/yardMaterials'
 import { runtime, totalRemaining } from '../game/runtime'
 import { FINISH_THRESHOLD, useGame } from '../game/store'
+import { House, sidingLook } from './House'
 
 export function Level() {
   const runId = useGame((s) => s.runId)
@@ -82,6 +83,8 @@ export function Level() {
         />
       ))}
 
+      <House />
+
       {washSurfaces.map((s, i) => (
         <mesh
           key={s.def.id}
@@ -118,6 +121,8 @@ function washMaterialFor(surface: WashSurface, tex: YardTextures): THREE.Materia
         tileMeters: [...YARD_TILE.wood],
         roughness: 0.8,
       })
+    case 'siding':
+      return createWashMaterial(surface, { ...sidingLook(), roughness: 0.85 })
     default:
       return null
   }
