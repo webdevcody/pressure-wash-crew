@@ -20,7 +20,7 @@ pnpm perf:baseline --channel chrome   # re-record main's real-GPU baseline (perf
 
 - `src/game/`: pure game logic and data (`store.ts` zustand, `runtime.ts` per-frame mutable state, `level1.ts` level data, `washSurface.ts` dirt masks)
 - `src/components/`: R3F scene and HUD/screens; `src/components/washer/`: the spray, one component per job
-- `src/controls/`: per-feature control help for the menu and HUD
+- `src/controls/`: per-feature control help for the menu and HUD; `src/scene/`: per-feature scene mounts
 - `src/dev/debug.ts`: `window.__pwc` debug API (dev builds, or any build with `?perf`); `?stats` shows an FPS panel
 - `scripts/pr/`: PR capture tooling; `perf/baseline.json`: main's real-GPU perf baseline
 
@@ -42,3 +42,5 @@ Add a feature through its own files, not by editing a shared list. Merges that d
 - Washer: one component per job in `src/components/washer/` (input, nozzle keys, aim probe, spray, particles), mounted by `Washer.tsx`. New droplet effects call `emitParticle` (`src/game/sprayParticles.ts`); new raycasts use `castSprayRay` (`src/game/sprayRay.ts`).
 - Dirt masks: per-feature logic goes in its own module that `WashSurface` calls (`surfaceHoles.ts`, `stains.ts`, `noise.ts`), not in its constructor.
 - Component styles: a `.css` file next to the component, imported by it, instead of `src/styles.css`.
+- Scene features (effects, audio, backdrops): add `src/scene/<nn>-<feature>.tsx` default-exporting a component; `SceneFeatures` mounts it inside the Canvas. Don't import it into `App.tsx`.
+- Sky, fog and lights: `src/components/Environment.tsx`; haze color, fog range and the camera's far plane: `src/game/atmosphere.ts`.

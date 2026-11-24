@@ -1,0 +1,8 @@
+{
+  "$comment": "City backdrop: the street in front, the neighbors and the downtown skyline.",
+  "views": [
+    { "name": "city-street-front", "phase": "playing", "pose": { "pos": [3, 1, 13.5], "lookAt": [-6, 2.2, 40] } },
+    { "name": "city-neighbors-east", "phase": "playing", "pose": { "pos": [-12, 1, -10], "lookAt": [40, 3, 6] } },
+    { "name": "city-skyline", "phase": "playing", "pose": { "pos": [11, 1, 12], "lookAt": [-60, 30, -240] } }
+  ]
+}
