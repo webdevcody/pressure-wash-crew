@@ -6,6 +6,7 @@ import { Level } from './components/Level'
 import { Player, PHYSICS_PRIORITY } from './components/Player'
 import { Washer } from './components/Washer'
 import { Hud } from './components/Hud'
+import { AudioDriver } from './audio/AudioDriver'
 import { Celebrations } from './effects/Celebrations'
 import { CleanToast } from './effects/CleanToast'
 import { MenuScreen, PauseScreen, ScoreScreen } from './components/Screens'
@@ -56,6 +57,7 @@ export function App() {
         </Suspense>
         <Washer />
         <Celebrations />
+        <AudioDriver />
         {statsOverlay && <Stats />}
       </Canvas>
 
