@@ -33,4 +33,8 @@ pnpm build      # typecheck + production build
 - **Game loop:** menu → playing (timer + % dirt remaining + per-surface checklist) → score screen when ≤1% of the dirt is left. Fastest time is stored in `localStorage`.
 - **Level:** `src/game/level1.ts` is pure data: gray-box blockers plus the washable surfaces placed on them. Add a surface by adding an entry there.
 
-In dev builds, `window.__pwc.cleanAll()` instantly cleans everything (handy for testing the score screen).
+In dev builds (or any build opened with `?perf`), `window.__pwc.cleanAll()` instantly cleans everything (handy for testing the score screen). Add `?stats` to the URL for an on-screen FPS panel.
+
+## Contributing
+
+Agent and contributor guide: [AGENTS.md](AGENTS.md). Pull requests follow [the create-pull-request skill](.claude/skills/create-pull-request/SKILL.md): before/after screenshots, a video, perf metrics against 120 FPS, and a risk rating. `pnpm pr:capture` generates most of it.

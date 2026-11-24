@@ -1,6 +1,6 @@
 import { Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Sky } from '@react-three/drei'
+import { Sky, Stats } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import { Level } from './components/Level'
 import { Player } from './components/Player'
@@ -8,7 +8,7 @@ import { Washer } from './components/Washer'
 import { Hud } from './components/Hud'
 import { MenuScreen, PauseScreen, ScoreScreen } from './components/Screens'
 import { useGame } from './game/store'
-import { runtime } from './game/runtime'
+import { installDebugApi, statsOverlay } from './dev/debug'
 
 export function App() {
   const phase = useGame((s) => s.phase)
@@ -25,15 +25,8 @@ export function App() {
     return () => document.removeEventListener('pointerlockchange', onChange)
   }, [])
 
-  // Dev-only hooks for debugging and automated checks.
-  useEffect(() => {
-    if (!import.meta.env.DEV) return
-    ;(window as unknown as Record<string, unknown>).__pwc = {
-      game: useGame,
-      runtime,
-      cleanAll: () => runtime.surfaces.forEach((s) => s.cleanAll()),
-    }
-  }, [])
+  // Debug hooks for automated checks (dev builds, or any build with ?perf).
+  useEffect(installDebugApi, [])
 
   return (
     <>
@@ -60,6 +53,7 @@ export function App() {
           </Physics>
         </Suspense>
         <Washer />
+        {statsOverlay && <Stats />}
       </Canvas>
 
       {phase === 'playing' && <Hud />}

@@ -43,6 +43,14 @@ export function Player() {
     }
   }, [gl])
 
+  // Publish the body so debug tools can teleport the player.
+  useEffect(() => {
+    runtime.player = body.current
+    return () => {
+      runtime.player = null
+    }
+  }, [])
+
   // Respawn at the start of every run.
   useEffect(() => {
     const b = body.current

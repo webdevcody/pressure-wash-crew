@@ -1,4 +1,5 @@
 import type * as THREE from 'three'
+import type { RapierRigidBody } from '@react-three/rapier'
 import type { WashSurface } from './washSurface'
 
 /**
@@ -11,6 +12,8 @@ export const runtime = {
   raycastTargets: [] as THREE.Object3D[],
   look: { yaw: 0, pitch: 0 },
   keys: new Set<string>(),
+  /** The player's physics body, once mounted. */
+  player: null as RapierRigidBody | null,
 }
 
 export function totalRemaining(): number {
