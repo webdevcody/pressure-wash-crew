@@ -5,8 +5,8 @@ import { HARDNESS, SOAPED_HARDNESS, cleaningPower, layoutStains, type SurfaceKin
 export const TEXELS_PER_METER = 32
 /** A texel counts as clean once its dirt drops below this. */
 export const CLEAN_THRESHOLD = 0.12
-/** Color soap foam tints dirty texels toward. */
-const FOAM: [number, number, number] = [236, 246, 255]
+/** Soap foam tint (blue so soaped dirt never reads as clean). */
+const FOAM: [number, number, number] = [150, 205, 250]
 
 export interface SurfaceDef {
   id: string
@@ -222,7 +222,7 @@ export class WashSurface {
     let r = this.stainRGB[s]
     let g = this.stainRGB[s + 1]
     let b = this.stainRGB[s + 2]
-    const foam = this.soap[i] * 0.55
+    const foam = this.soap[i] * 0.65
     if (foam > 0) {
       r += (FOAM[0] - r) * foam
       g += (FOAM[1] - g) * foam
