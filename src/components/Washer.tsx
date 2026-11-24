@@ -5,11 +5,11 @@ import { runtime } from '../game/runtime'
 import { useGame } from '../game/store'
 import { CLEAN_THRESHOLD, type WashSurface } from '../game/washSurface'
 import { NOZZLES, pressureFalloff, type NozzleDef } from '../game/nozzles'
+import { WasherGun } from './WasherGun'
 
 const RAYS_PER_FRAME = 8
 /** Furthest the crosshair looks for a stain to label. */
 const AIM_RANGE = 14
-const NOZZLE_OFFSET = new THREE.Vector3(0.22, -0.2, -0.75)
 const MAX_PARTICLES = 700
 const STREAM_PER_FRAME = 10
 const WATER = new THREE.Color('#cfeeff')
@@ -73,7 +73,6 @@ function footprint(n: NozzleDef, d: number, r: number) {
 export function Washer() {
   const camera = useThree((s) => s.camera)
   const nozzleIndex = useGame((s) => s.nozzle)
-  const gun = useRef<THREE.Group>(null)
   const drops = useRef<THREE.InstancedMesh>(null)
   const particles = useMemo<Particle[]>(
     () =>
@@ -122,6 +121,12 @@ export function Washer() {
     return () => window.removeEventListener('keydown', key)
   }, [])
 
+  // The gun's tip takes the selected nozzle's color.
+  useEffect(() => {
+    const mat = runtime.nozzleTip?.material as THREE.MeshStandardMaterial | undefined
+    mat?.color.set(NOZZLES[nozzleIndex].color)
+  }, [nozzleIndex])
+
   // Water by default; soap particles are white foam.
   useEffect(() => {
     const mesh = drops.current
@@ -148,15 +153,8 @@ export function Washer() {
     const spraying = g.spraying && playing
     const n = NOZZLES[g.nozzle]
 
-    // Gun follows the camera.
-    if (gun.current) {
-      gun.current.position.copy(camera.position)
-      gun.current.quaternion.copy(camera.quaternion)
-      const kickAmt = n.shape === 'point' ? 0.009 : 0.006
-      const kick = spraying ? (Math.random() - 0.5) * kickAmt : 0
-      gun.current.children[0].position.set(kick, kick, spraying ? 0.015 : 0)
-    }
-    nozzleWorld.copy(NOZZLE_OFFSET).applyMatrix4(camera.matrixWorld)
+    // The gun model (WasherGun) runs first and publishes its tip position.
+    nozzleWorld.copy(runtime.nozzleWorld)
 
     camera.getWorldDirection(tmpDir)
     tmpRight.set(1, 0, 0).applyQuaternion(camera.quaternion)
@@ -256,27 +254,7 @@ export function Washer() {
 
   return (
     <>
-      <group ref={gun}>
-        <group>
-          {/* Wand + trigger body, positioned bottom-right of view */}
-          <mesh position={[0.22, -0.2, -0.45]} rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.018, 0.018, 0.6, 8]} />
-            <meshStandardMaterial color="#4a4f55" metalness={0.2} roughness={0.5} />
-          </mesh>
-          <mesh position={[0.22, -0.2, -0.75]} rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.012, 0.028, 0.08, 8]} />
-            <meshStandardMaterial color={NOZZLES[nozzleIndex].color} metalness={0.3} roughness={0.4} />
-          </mesh>
-          <mesh position={[0.22, -0.24, -0.17]}>
-            <boxGeometry args={[0.06, 0.16, 0.12]} />
-            <meshStandardMaterial color="#c0392b" />
-          </mesh>
-          <mesh position={[0.22, -0.33, -0.14]} rotation-x={-0.3}>
-            <boxGeometry args={[0.05, 0.16, 0.06]} />
-            <meshStandardMaterial color="#222" />
-          </mesh>
-        </group>
-      </group>
+      <WasherGun />
       <instancedMesh ref={drops} args={[undefined, undefined, MAX_PARTICLES]} frustumCulled={false}>
         <sphereGeometry args={[0.025, 6, 4]} />
         <meshBasicMaterial color="#ffffff" transparent opacity={0.75} depthWrite={false} />

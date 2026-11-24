@@ -22,6 +22,12 @@ export interface SurfaceDef {
   /** Base grime color. */
   dirt: string
   seed: number
+  /**
+   * Rectangles [x0, y0, x1, y1] in meters from the surface's bottom-left that
+   * are covered by something solid (window trim, a door...). Their texels are
+   * never dirty and don't count toward the total, since the spray can't reach them.
+   */
+  holes?: [number, number, number, number][]
 }
 
 /**
@@ -55,6 +61,9 @@ export class WashSurface {
   private readonly cleanRGB: [number, number, number]
   private readonly dirtRGB: [number, number, number]
   private readonly noise: (x: number, y: number) => number
+  /** 1 where a texel lies under a hole and is left out of the count. */
+  private readonly excluded: Uint8Array | null
+  private readonly excludedCount: number
   cleanCount = 0
   private dirty = false
 
@@ -74,6 +83,22 @@ export class WashSurface {
     this.dirtRGB = [d.r * 255, d.g * 255, d.b * 255]
     this.noise = makeValueNoise(mulberry32(def.seed))
 
+    let excludedCount = 0
+    this.excluded = null
+    if (def.holes?.length) {
+      const ex = new Uint8Array(n)
+      for (const [x0, y0, x1, y1] of def.holes) {
+        const tx0 = Math.max(0, Math.ceil(x0 * TEXELS_PER_METER - 0.5))
+        const tx1 = Math.min(this.w - 1, Math.floor(x1 * TEXELS_PER_METER - 0.5))
+        const ty0 = Math.max(0, Math.ceil(y0 * TEXELS_PER_METER - 0.5))
+        const ty1 = Math.min(this.h - 1, Math.floor(y1 * TEXELS_PER_METER - 0.5))
+        for (let y = ty0; y <= ty1; y++) for (let x = tx0; x <= tx1; x++) ex[y * this.w + x] = 1
+      }
+      for (let i = 0; i < n; i++) excludedCount += ex[i]
+      this.excluded = ex
+    }
+    this.excludedCount = excludedCount
+
     this.texture = new THREE.DataTexture(this.pixels, this.w, this.h, THREE.RGBAFormat)
     this.texture.colorSpace = THREE.SRGBColorSpace
     this.texture.magFilter = THREE.LinearFilter
@@ -83,8 +108,9 @@ export class WashSurface {
     this.reset(0)
   }
 
+  /** Texels that count toward progress (holes excluded). */
   get total() {
-    return this.w * this.h
+    return this.w * this.h - this.excludedCount
   }
 
   get cleanFraction() {
@@ -102,6 +128,8 @@ export class WashSurface {
     )
     this.dirt.fill(1)
     this.soap.fill(0)
+    const ex = this.excluded
+    if (ex) for (let i = 0; i < ex.length; i++) if (ex[i]) this.dirt[i] = 0
     this.cleanCount = 0
     for (let i = 0; i < this.dirt.length; i++) this.paint(i)
     this.texture.needsUpdate = true
@@ -231,6 +259,7 @@ export class WashSurface {
     this.pixels[o] = clamp255(this.cleanRGB[0] + (r - this.cleanRGB[0]) * d)
     this.pixels[o + 1] = clamp255(this.cleanRGB[1] + (g - this.cleanRGB[1]) * d)
     this.pixels[o + 2] = clamp255(this.cleanRGB[2] + (b - this.cleanRGB[2]) * d)
+    // Alpha = stain coverage, used by textured wash materials (washMaterial.ts).
     this.pixels[o + 3] = clamp255(d * 255)
   }
 }
