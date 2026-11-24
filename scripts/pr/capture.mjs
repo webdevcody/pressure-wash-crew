@@ -136,7 +136,9 @@ await metricsCtx.close()
 
 let gitSha = null
 try {
-  gitSha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: args.cwd ?? process.cwd() }).toString().trim()
+  const cwd = args.cwd ?? process.cwd()
+  gitSha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd }).toString().trim()
+  if (execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd }).toString().trim()) gitSha += ' + uncommitted changes'
 } catch {}
 
 fs.writeFileSync(

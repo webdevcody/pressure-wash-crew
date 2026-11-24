@@ -26,6 +26,8 @@ for side in before after; do
   [ -d "$src/$side" ] || continue
   mkdir -p "$dest/$side"
   find "$src/$side" -maxdepth 1 -type f \( -name '*.png' -o -name '*.gif' -o -name '*.mp4' -o -name 'metrics.json' \) -exec cp {} "$dest/$side/" \;
+  # Only ship the .webm when ffmpeg couldn't make an .mp4.
+  if [ -f "$src/$side/walkthrough.webm" ] && [ ! -f "$src/$side/walkthrough.mp4" ]; then cp "$src/$side/walkthrough.webm" "$dest/$side/"; fi
 done
 
 git add -f "$dest"

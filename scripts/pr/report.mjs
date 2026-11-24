@@ -57,8 +57,9 @@ p()
 p('## Video walkthrough')
 p()
 if (exists(args.after, 'walkthrough.gif')) p(`![walkthrough](${asset('after', 'walkthrough.gif')})`)
-const vids = ['mp4', 'webm'].filter((e) => exists(args.after, `walkthrough.${e}`))
-if (vids.length) p(`Full video (after): ${vids.map((e) => `[walkthrough.${e}](${asset('after', `walkthrough.${e}`)})`).join(' · ')}`)
+// publish-assets.sh ships the .mp4, or the .webm when there is no .mp4.
+const vid = ['mp4', 'webm'].find((e) => exists(args.after, `walkthrough.${e}`))
+if (vid) p(`Full video (after): [walkthrough.${vid}](${asset('after', `walkthrough.${vid}`)})`)
 else p('_No video captured._')
 p()
 
@@ -75,7 +76,7 @@ p()
 p(`- Renderer: \`${after.renderer}\`${after.headed ? ' (headed)' : ' (headless)'}, ${after.viewport.width}×${after.viewport.height}, ${after.seconds}s sample per view`)
 p(`- Before: \`${before.sha ?? '?'}\` · After: \`${after.sha ?? '?'}\``)
 if (software)
-  p(`- ⚠️ **Software GPU** (SwiftShader). Absolute FPS here is far below real hardware, so the 120 FPS flags below are not meaningful on their own; judge by the before → after deltas, and re-run with \`--headed\` on a machine with a GPU for absolute numbers.`)
+  p(`- ⚠️ **Software GPU** (SwiftShader). Absolute FPS here is far below real hardware, so the 120 FPS column only checks CPU time per frame; judge by the before → after deltas, and re-run with \`--headed\` on a machine with a GPU for absolute numbers.`)
 p()
 p('| View | Frame ms median (before → after) | Frame ms p95 | FPS | CPU ms median | Draw calls | Triangles | 120 FPS |')
 p('| --- | --- | --- | --- | --- | --- | --- | --- |')
@@ -99,7 +100,18 @@ for (const name of names) {
   const pair = (get, f) => (b ? `${f(get(b))} → ${f(get(a))}${d(get)}` : `${f(get(a))} (new)`)
   const meets = a.frameMs.median <= TARGET_MS
   const p95ok = a.frameMs.p95 <= TARGET_MS
-  const flag = meets && p95ok ? '✅' : meets ? '⚠️ p95 over' : '❌ below'
+  // CPU time alone over budget means 120 FPS is out of reach on any GPU, so
+  // it is the one absolute check that still means something on SwiftShader.
+  const cpuOk = a.cpuMs.median <= TARGET_MS
+  const flag = !cpuOk
+    ? '❌ CPU over budget'
+    : software
+      ? 'GPU n/a · CPU ✅'
+      : meets && p95ok
+        ? '✅'
+        : meets
+          ? '⚠️ p95 over'
+          : '❌ below'
   p(
     `| \`${name}\` | ${pair((s) => s.frameMs.median, ms)} | ${pair((s) => s.frameMs.p95, ms)} | ${pair((s) => s.fps, (x) => x.toFixed(1))} | ${pair((s) => s.cpuMs.median, ms)} | ${pair((s) => s.drawCalls.median, n)} | ${pair((s) => s.triangles.median, n)} | ${flag} |`,
   )
@@ -109,6 +121,7 @@ for (const name of names) {
   const dTris = pct(a.triangles.median, b.triangles.median)
   const dCalls = pct(a.drawCalls.median, b.drawCalls.median)
   if (!software && b.frameMs.median <= TARGET_MS && !meets) bump('High', `\`${name}\` drops below 120 FPS`)
+  if (b.cpuMs.median <= TARGET_MS && !cpuOk) bump('High', `\`${name}\` CPU time per frame exceeds 8.33 ms`)
   if (dFrame > HIGH.frameMs) bump('High', `\`${name}\` frame time ${fmtPct(dFrame)}`)
   else if (dFrame > MEDIUM.frameMs) bump('Medium', `\`${name}\` frame time ${fmtPct(dFrame)}`)
   if (dTris > HIGH.tris) bump('High', `\`${name}\` triangles ${fmtPct(dTris)}`)
