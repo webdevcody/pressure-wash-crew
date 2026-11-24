@@ -29,3 +29,10 @@ pnpm perf:baseline --channel chrome   # re-record main's real-GPU baseline (perf
 - `.github/workflows/` can't be changed by the agent GitHub token; give Cody the file contents to commit by hand.
 - **Pull requests:** always follow [`.claude/skills/create-pull-request/SKILL.md`](.claude/skills/create-pull-request/SKILL.md). Every PR needs before/after screenshots, a video walkthrough, a Metrics section and a Risk section.
 - **Auto-merge:** if a PR's risk is Low, or it's a simple bug fix that doesn't need human review, fix any merge conflicts (merge `main` in, never force-push), confirm `pnpm build` passes, and squash-merge it yourself. Medium and High risk PRs wait for Cody. Details in the skill, step 6.
+- **Conflicts and merging:** always follow [`.claude/skills/merge-pull-request/SKILL.md`](.claude/skills/merge-pull-request/SKILL.md). A conflict marks a coupling hotspot: decouple it so features plug in through their own files, then resolve, rebuild, re-measure and merge.
+
+## Extension points
+
+Add a feature through its own files, not by editing a shared list. Merges that decouple a hotspot add it here.
+
+- Reacting to a surface getting cleaned: subscribe with `onSurfaceCleaned` in `src/game/surfaceEvents.ts` instead of editing the washer.
