@@ -18,6 +18,10 @@ export const runtime = {
   nozzleWorld: new THREE.Vector3(),
   /** The nozzle tip mesh on the gun (own material, so its color can follow the nozzle). */
   nozzleTip: null as THREE.Mesh | null,
+  /** True while the player is standing on something (ground probe hit this frame). */
+  grounded: false,
+  /** Increments each time a jump actually starts. */
+  jumpCount: 0,
 }
 
 export function totalRemaining(): number {
