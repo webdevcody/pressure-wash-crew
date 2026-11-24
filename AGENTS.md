@@ -27,3 +27,4 @@ pnpm pr:capture   # before/after screenshots, video and perf metrics for a PR
 - Performance budget: **120 FPS (8.33 ms/frame)**. Keep per-frame work in `useFrame` allocation-free and out of React state; read/write `runtime` instead.
 - `.github/workflows/` can't be changed by the agent GitHub token; give Cody the file contents to commit by hand.
 - **Pull requests:** always follow [`.claude/skills/create-pull-request/SKILL.md`](.claude/skills/create-pull-request/SKILL.md). Every PR needs before/after screenshots, a video walkthrough, a Metrics section and a Risk section.
+- **Auto-merge:** if a PR's risk is Low, or it's a simple bug fix that doesn't need human review, fix any merge conflicts (merge `main` in, never force-push), confirm `pnpm build` passes, and squash-merge it yourself. Medium and High risk PRs wait for Cody. Details in the skill, step 6.

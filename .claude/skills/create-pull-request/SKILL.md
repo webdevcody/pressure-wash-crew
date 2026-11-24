@@ -97,6 +97,23 @@ Take the **higher** of the report's suggested risk (`<!-- suggested-risk: … --
 
 Never rate lower than the suggestion without saying why in the Risk line.
 
+## 6. Merge it yourself when it's safe
+
+Cody has pre-approved agents merging their own PRs when **either**:
+
+- the Risk is **Low**, or
+- it's a small, self-contained **bug fix** that doesn't need a human eye: no change to gameplay feel or rules, no per-frame hot path, and no Medium/High signal in the Metrics.
+
+**Medium and High risk PRs are never merged by an agent.** They wait for Cody's review.
+
+Before merging:
+
+1. **Fix conflicts** by merging `main` into the branch (`git fetch origin main && git merge origin/main`), resolving, and pushing. Never rebase or force-push.
+2. **Re-check after the merge:** `pnpm build` must pass. If resolving the conflict changed game code, re-run `pnpm pr:capture`, update Metrics and Risk, and re-apply the rule above to the new rating.
+3. **Wait for checks:** any CI on the PR must be green.
+
+Then **squash-merge**, so the PR-assets commits stay out of `main`'s history. Merging to `main` deploys the live site, so the build check isn't optional. After merging, say in the PR (or to Cody) that it was auto-merged under this rule. If a tool or permission blocks the merge, leave the PR open and give Cody the link.
+
 ## If something can't run
 
 Never invent numbers or screenshots. If the browser can't launch or a capture fails, keep every section and write in it what failed and the command to reproduce, so the reviewer knows to run it locally.
