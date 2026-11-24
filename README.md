@@ -32,6 +32,7 @@ pnpm build      # typecheck + production build
 - **Occlusion:** the spray raycasts against every level mesh, so you can't wash through walls.
 - **Game loop:** menu → playing (timer + % dirt remaining + per-surface checklist) → score screen when ≤1% of the dirt is left. Fastest time is stored in `localStorage`.
 - **Level:** `src/game/level1.ts` is pure data: gray-box blockers plus the washable surfaces placed on them. Add a surface by adding an entry there.
+- **Textures:** yard textures (grass, concrete, block wall, wood, crate) are baked by `scripts/textures/gen_yard_textures.py` into `src/assets/textures/yard/` (procedural and seeded, no third-party assets). Washable surfaces can show a texture under the dirt via `createWashMaterial` (`src/game/washMaterial.ts`): the texture tiles at full resolution and the dirt mask is mixed over it by its alpha (stain coverage).
 
 In dev builds (or any build opened with `?perf`), `window.__pwc.cleanAll()` instantly cleans everything (handy for testing the score screen). Add `?stats` to the URL for an on-screen FPS panel.
 
