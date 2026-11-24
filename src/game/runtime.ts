@@ -1,4 +1,4 @@
-import type * as THREE from 'three'
+import * as THREE from 'three'
 import type { RapierRigidBody } from '@react-three/rapier'
 import type { WashSurface } from './washSurface'
 
@@ -14,6 +14,10 @@ export const runtime = {
   keys: new Set<string>(),
   /** The player's physics body, once mounted. */
   player: null as RapierRigidBody | null,
+  /** World position of the gun's nozzle tip, updated every frame before the spray runs. */
+  nozzleWorld: new THREE.Vector3(),
+  /** The nozzle tip mesh on the gun (own material, so its color can follow the nozzle). */
+  nozzleTip: null as THREE.Mesh | null,
 }
 
 export function totalRemaining(): number {

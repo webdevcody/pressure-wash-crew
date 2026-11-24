@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { Sky, Stats } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import { Level } from './components/Level'
-import { Player } from './components/Player'
+import { Player, PHYSICS_PRIORITY } from './components/Player'
 import { Washer } from './components/Washer'
 import { Hud } from './components/Hud'
 import { MenuScreen, PauseScreen, ScoreScreen } from './components/Screens'
@@ -47,7 +47,7 @@ export function App() {
           shadow-normalBias={0.03}
         />
         <Suspense fallback={null}>
-          <Physics gravity={[0, -20, 0]}>
+          <Physics gravity={[0, -20, 0]} updatePriority={PHYSICS_PRIORITY}>
             <Level />
             <Player />
           </Physics>
