@@ -78,14 +78,14 @@ function buildGun() {
   const metal: THREE.BufferGeometry[] = []
 
   // Trigger housing: a flattened capsule.
-  plastic.push(paint(place(new THREE.CapsuleGeometry(0.03, 0.12, 6, 16), [0, 0, 0], [alongZ, 0, 0], [0.72, 1, 1.15]), C.body))
+  plastic.push(paint(place(new THREE.CapsuleGeometry(0.03, 0.12, 4, 12), [0, 0, 0], [alongZ, 0, 0], [0.72, 1, 1.15]), C.body))
   // Rubber bumper on the back and a dark band near the front.
-  plastic.push(paint(place(new THREE.CylinderGeometry(0.0235, 0.0235, 0.014, 16), [0, 0, 0.094], [alongZ, 0, 0], [1, 1, 1.5]), C.rubber))
-  plastic.push(paint(place(new THREE.CylinderGeometry(0.0225, 0.0225, 0.012, 14), [0, 0, -0.06], [alongZ, 0, 0], [1, 1, 1.5]), C.shroud))
+  plastic.push(paint(place(new THREE.CylinderGeometry(0.0235, 0.0235, 0.014, 12), [0, 0, 0.094], [alongZ, 0, 0], [1, 1, 1.5]), C.rubber))
+  plastic.push(paint(place(new THREE.CylinderGeometry(0.0225, 0.0225, 0.012, 12, 1, true), [0, 0, -0.06], [alongZ, 0, 0], [1, 1, 1.5]), C.shroud))
   // Dark shroud along the top.
   plastic.push(paint(place(new THREE.BoxGeometry(0.022, 0.012, 0.13), [0, 0.033, -0.005]), C.shroud))
   // Pistol grip, raked back.
-  plastic.push(paint(place(new THREE.CapsuleGeometry(0.022, 0.1, 4, 12), [0, -0.075, 0.045], [GRIP_TILT, 0, 0], [0.85, 1, 1]), C.rubber))
+  plastic.push(paint(place(new THREE.CapsuleGeometry(0.022, 0.1, 3, 10), [0, -0.075, 0.045], [GRIP_TILT, 0, 0], [0.85, 1, 1]), C.rubber))
   // Grip ridges on the front of the grip.
   for (let i = 0; i < 3; i++) {
     const t = -0.03 + i * 0.03
@@ -98,7 +98,7 @@ function buildGun() {
   }
   // Trigger guard: half a torus hanging under the housing.
   plastic.push(
-    paint(place(new THREE.TorusGeometry(0.03, 0.005, 6, 14, Math.PI), [0, -0.03, -0.022], [0, Math.PI / 2, Math.PI]), C.body),
+    paint(place(new THREE.TorusGeometry(0.03, 0.005, 5, 10, Math.PI), [0, -0.03, -0.022], [0, Math.PI / 2, Math.PI]), C.body),
   )
   // Trigger and safety lever.
   plastic.push(paint(place(new THREE.BoxGeometry(0.012, 0.045, 0.014), [0, -0.042, -0.012], [0.25, 0, 0]), C.red))
@@ -110,9 +110,9 @@ function buildGun() {
     new THREE.Vector3(-0.02, -0.32, 0.1),
     new THREE.Vector3(-0.05, -0.46, 0.06),
   ])
-  plastic.push(paint(new THREE.TubeGeometry(hosePath, 14, 0.011, 8, false), C.rubber))
+  plastic.push(paint(new THREE.TubeGeometry(hosePath, 10, 0.011, 7, false), C.rubber))
   // Foam grip on the lance.
-  plastic.push(paint(place(new THREE.CapsuleGeometry(0.019, 0.09, 4, 12), [0, 0.005, -0.3], [alongZ, 0, 0]), C.rubber))
+  plastic.push(paint(place(new THREE.CapsuleGeometry(0.019, 0.09, 3, 10), [0, 0.005, -0.3], [alongZ, 0, 0]), C.rubber))
 
   // Brass swivel where the hose meets the grip.
   metal.push(paint(place(new THREE.CylinderGeometry(0.013, 0.013, 0.03, 10), [0, -0.152, 0.072], [GRIP_TILT, 0, 0]), C.brass))
