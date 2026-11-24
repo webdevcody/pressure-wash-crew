@@ -1,0 +1,7 @@
+{
+  "$comment": "Nozzles and stains: stain close-ups on the house front and driveway.",
+  "views": [
+    { "name": "house-stains", "phase": "playing", "pose": { "pos": [0, 0.85, 2.5], "lookAt": [0, 1.5, -3] } },
+    { "name": "driveway-stains", "phase": "playing", "pose": { "pos": [7, 0.85, 7.5], "lookAt": [7, 0, 1.5] } }
+  ]
+}

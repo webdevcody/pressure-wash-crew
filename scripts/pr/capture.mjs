@@ -6,11 +6,14 @@
 // Options:
 //   --url <url>          page to load (required); ?perf is appended
 //   --out <dir>          output dir (required)
-//   --views <file>       view list (default scripts/pr/views.json)
+//   --views <path>       a view file, or a folder of them (default scripts/pr/views/)
 //   --seconds <n>        perf sample length per view (default 4)
 //   --scenario <file>    custom walkthrough module for the video (see SKILL.md)
 //   --no-video           skip the video
 //   --headed             real window + GPU (more representative FPS)
+//   --channel <name>     browser channel, e.g. chrome (installed Google Chrome)
+//   --samples <n>        perf samples per view, reported as their median (default 1)
+//   --dpr <n>            device pixel ratio (default 1)
 //
 // Writes <out>/metrics.json, <out>/<view>.png and <out>/walkthrough.{webm,mp4,gif}.
 import { chromium } from 'playwright'
@@ -18,6 +21,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { machineInfo, medianStats } from './lib.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const args = parseArgs(process.argv.slice(2))
@@ -27,8 +31,9 @@ if (!args.url || !args.out) {
 }
 const outDir = path.resolve(args.out)
 const seconds = Number(args.seconds ?? 4)
-const viewsFile = path.resolve(args.views ?? path.join(here, 'views.json'))
-const { views } = JSON.parse(fs.readFileSync(viewsFile, 'utf8'))
+const samples = Math.max(1, Number(args.samples ?? 1))
+const dpr = Number(args.dpr ?? 1)
+const views = loadViews(path.resolve(args.views ?? path.join(here, 'views')))
 const probe = fs.readFileSync(path.join(here, 'perf-probe.js'), 'utf8')
 const VIEWPORT = { width: 1280, height: 720 }
 
@@ -40,6 +45,9 @@ fs.mkdirSync(outDir, { recursive: true })
 
 const browser = await chromium.launch({
   headless: !args.headed,
+  // --channel chrome uses the installed Google Chrome instead of Playwright's
+  // bundled Chromium (no browser download needed on a dev machine).
+  ...(args.channel ? { channel: args.channel } : {}),
   args: [
     // Uncap rAF so frame times show real throughput instead of a 60 Hz vsync cap.
     '--disable-gpu-vsync',
@@ -95,7 +103,7 @@ async function spray(page, on) {
 }
 
 // ---------- metrics + screenshots ----------
-const metricsCtx = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 })
+const metricsCtx = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: dpr })
 await metricsCtx.addInitScript(probe)
 const page = await openGame(metricsCtx)
 const debug = await hasDebug(page)
@@ -117,18 +125,22 @@ for (const view of views) {
   if (view.eval) await page.evaluate(view.eval)
   await sleep(view.settleMs ?? 1000)
 
-  // At least `seconds`, and keep going (up to 5x) until 60 frames are in,
-  // so slow software-GPU runs still get a usable sample.
-  await page.evaluate(() => window.__perfProbe.start())
-  const t0 = Date.now()
-  await sleep(seconds * 1000)
-  while (Date.now() - t0 < seconds * 5000 && (await page.evaluate(() => window.__perfProbe.count())) < 60) await sleep(500)
-  const stats = await page.evaluate(() => window.__perfProbe.stop())
+  // Each sample: at least `seconds`, and keep going (up to 5x) until 60
+  // frames are in, so slow software-GPU runs still get a usable sample.
+  const runs = []
+  for (let i = 0; i < samples; i++) {
+    await page.evaluate(() => window.__perfProbe.start())
+    const t0 = Date.now()
+    await sleep(seconds * 1000)
+    while (Date.now() - t0 < seconds * 5000 && (await page.evaluate(() => window.__perfProbe.count())) < 60) await sleep(500)
+    runs.push(await page.evaluate(() => window.__perfProbe.stop()))
+  }
+  const stats = medianStats(runs)
   const shot = `${view.name}.png`
   await page.screenshot({ path: path.join(outDir, shot) })
   if (view.spray) await spray(page, false)
 
-  results.push({ name: view.name, screenshot: shot, stats })
+  results.push({ name: view.name, screenshot: shot, stats, ...(samples > 1 ? { sampleFps: runs.map((r) => Number(r.fps.toFixed(1))) } : {}) })
   console.log(
     `${view.name.padEnd(24)} ${stats.fps.toFixed(1).padStart(6)} fps  ` +
       `median ${stats.frameMs.median.toFixed(2)} ms  p95 ${stats.frameMs.p95.toFixed(2)} ms  ` +
@@ -144,10 +156,39 @@ try {
   if (execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd }).toString().trim()) gitSha += ' + uncommitted changes'
 } catch {}
 
+// With vsync off, frame intervals should be well under the display's refresh
+// interval. If every view sits on a common refresh rate, the browser ignored
+// the flags and the numbers are a cap, not throughput.
+const refreshCap = (() => {
+  const measured = results.filter((r) => r.stats)
+  if (!measured.length) return null
+  for (const hz of [60, 90, 120, 144, 165, 240]) {
+    if (measured.every((r) => Math.abs(r.stats.fps - hz) / hz < 0.03)) return hz
+  }
+  return null
+})()
+if (refreshCap) console.warn(`⚠️ every view runs at ~${refreshCap} FPS: looks capped by vsync, not uncapped throughput`)
+
 fs.writeFileSync(
   path.join(outDir, 'metrics.json'),
   JSON.stringify(
-    { url: pageUrl, sha: gitSha, renderer, headed: !!args.headed, viewport: VIEWPORT, seconds, targetFps: 120, views: results, capturedAt: new Date().toISOString() },
+    {
+      url: pageUrl,
+      sha: gitSha,
+      renderer,
+      browser: `${args.channel ?? 'playwright chromium'} ${browser.version()}`,
+      machine: machineInfo(),
+      headed: !!args.headed,
+      vsync: 'off (--disable-gpu-vsync --disable-frame-rate-limit)',
+      refreshCap,
+      viewport: VIEWPORT,
+      dpr,
+      seconds,
+      samples,
+      targetFps: 120,
+      views: results,
+      capturedAt: new Date().toISOString(),
+    },
     null,
     2,
   ),
@@ -254,4 +295,19 @@ function parseArgs(argv) {
     else out[key] = argv[++i]
   }
   return out
+}
+
+// One JSON file per feature ({ "views": [...] }), read in file-name order, so
+// a PR adds its views as a new file instead of editing a shared list.
+function loadViews(p) {
+  const files = fs.statSync(p).isDirectory()
+    ? fs.readdirSync(p).filter((f) => f.endsWith('.json')).sort().map((f) => path.join(p, f))
+    : [p]
+  const all = files.flatMap((f) => JSON.parse(fs.readFileSync(f, 'utf8')).views)
+  const seen = new Set()
+  for (const v of all) {
+    if (seen.has(v.name)) throw new Error(`duplicate view name "${v.name}" in ${p}`)
+    seen.add(v.name)
+  }
+  return all
 }

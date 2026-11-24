@@ -1,4 +1,6 @@
 import { formatTime, useGame } from '../game/store'
+import { MenuControls } from './ControlsHelp'
+import { SoundControl } from './SoundControl'
 
 function lockPointer() {
   const canvas = document.querySelector('canvas')
@@ -21,12 +23,8 @@ export function MenuScreen() {
         <h1>Pressure Wash Crew</h1>
         <p className="sub">Level 1 · The Backyard</p>
         <p>Blast every dirty surface clean as fast as you can.</p>
-        <div className="controls">
-          <div><kbd>WASD</kbd> move</div>
-          <div><kbd>Mouse</kbd> look</div>
-          <div><kbd>Left click</kbd> spray</div>
-          <div><kbd>Shift</kbd> run · <kbd>Space</kbd> jump</div>
-        </div>
+        <MenuControls />
+        <SoundControl />
         {bestTime != null && <p className="best">Fastest time: {formatTime(bestTime)}</p>}
         <button
           id="start-button"
@@ -48,6 +46,7 @@ export function PauseScreen() {
       <div className="panel">
         <h2>Paused</h2>
         <p>Click to keep washing</p>
+        <SoundControl />
       </div>
     </div>
   )
